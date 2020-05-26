@@ -31,7 +31,6 @@ export default class Login extends Component {
             .then(value => {
                 this.setState({ "authenticated": value });
             })
-            .done();
     }
 
     render() {
