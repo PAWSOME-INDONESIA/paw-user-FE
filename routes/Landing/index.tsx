@@ -1,14 +1,10 @@
 import React from 'react';
-import {StyleSheet, Text, View, TextInput, TouchableOpacity, Button} from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
 import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
-import { AsyncStorage } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Home from './routes/Home';
-// @ts-ignore
-import Login from './routes/Login';
+import Home from '../Home';
 
 function HomeScreen() {
   return (
@@ -21,18 +17,17 @@ function HomeScreen() {
 function SettingsScreen() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      {/*<Text>Settings!</Text>*/}
-      <Button title={'Log Out'} onPress={() => AsyncStorage.removeItem('@session')}/>
+      <Text>Settings!</Text>
     </View>
   );
 }
 
 function MapScreen() {
-    return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text>Track Your Pets</Text>
-        </View>
-    );
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Track Your Pets</Text>
+    </View>
+  );
 }
 
 function IconWithBadge({ name, badgeCount, color, size }) {
@@ -98,9 +93,9 @@ function MyTabs() {
           } else if (route.name === 'Map') {
             return (
               <Ionicons
-                  name={focused ? 'ios-add-circle' : 'ios-add'}
-                  size={size}
-                  color={color}
+                name={focused ? 'ios-add-circle' : 'ios-add'}
+                size={size}
+                color={color}
               />
             );
           }
@@ -119,34 +114,10 @@ function MyTabs() {
   );
 }
 
-// function Login() {
-//   return (
-//     <Login/>
-//   )
-// }
-
-export default function App() {
-
-  const Stack = createStackNavigator();
-
+export default function Landing() {
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{
-          headerShown: false,
-          gestureEnabled: false
-        }}>
-        <Stack.Screen
-          name="Login"
-          component={Login}
-          options={{ title: 'Welcome' }}
-        />
-        <Stack.Screen
-          name="Home"
-          component={MyTabs}
-          options={{ title: 'Welcome' }}
-        />
-      </Stack.Navigator>
+      <MyTabs />
     </NavigationContainer>
   );
 }
