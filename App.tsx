@@ -9,6 +9,8 @@ import { Ionicons } from '@expo/vector-icons';
 import Home from './routes/Home';
 // @ts-ignore
 import Login from './routes/Login';
+// @ts-ignore
+import Register from './routes/Register';
 
 function HomeScreen() {
   return (
@@ -139,6 +141,11 @@ export default function App() {
         <Stack.Screen
           name="Login"
           component={Login}
+          options={{ title: 'Welcome' }}
+        />
+        <Stack.Screen
+          name="Register"
+          component={Register}
           options={{ title: 'Welcome' }}
         />
         <Stack.Screen

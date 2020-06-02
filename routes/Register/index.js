@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {Image, KeyboardAvoidingView, StyleSheet, Text, View, AsyncStorage} from "react-native";
-import LoginForm from "./component/loginForm";
+import RegisterForm from "./component/registerForm";
 
 export const isSignedIn = () => {
     return new Promise((resolve, reject) => {
@@ -18,7 +18,7 @@ export const isSignedIn = () => {
 
 // const token = await isSignedIn();
 
-export default class Login extends Component {
+export default class Register extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -35,11 +35,11 @@ export default class Login extends Component {
 
     render() {
         // this.props.navigation.navigate("Home");
-        if(this.state.authenticated){
-            this.props.navigation.navigate("Home")
-        } else {
-            this.props.navigation.navigate("Login")
-        }
+        // if(this.state.authenticated){
+        //     this.props.navigation.navigate("Home")
+        // } else {
+        //     this.props.navigation.navigate("Login")
+        // }
         return(
             <KeyboardAvoidingView behavior="padding" style={styles.container}>
                 <View style={styles.logoContainer}>
@@ -49,7 +49,7 @@ export default class Login extends Component {
                     />
                     <Text style={styles.title}>App designed to help pet lovers</Text>
                 </View>
-                <LoginForm onClick={() => this.props.navigation.navigate("Home")} navi={this.props.navigation}/>
+                <RegisterForm onClick={() => this.props.navigation.navigate("Login")} navi={this.props.navigation}/>
             </KeyboardAvoidingView>
         )
     }

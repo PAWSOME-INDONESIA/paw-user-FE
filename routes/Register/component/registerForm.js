@@ -6,7 +6,7 @@ import Spinner from "../../Spinner/index";
 
 import { AsyncStorage } from 'react-native';
 
-export default class LoginForm extends Component {
+export default class RegisterForm extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -95,9 +95,31 @@ export default class LoginForm extends Component {
                         <View>
                             <TextInput
                                 style={styles.input}
-                                placeholder="Username or Email"
+                                placeholder="First Name"
+                                returnKeyType="next"
+                                onSubmitEditing={() => this.lastNameInput.focus()}
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                                placeholderTextColor="rgba(255,255,255,255)"
+                                onChange={text => this.onChangeText(text.nativeEvent.text, 'firstName')}
+                            />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Last Name"
+                                returnKeyType="next"
+                                onSubmitEditing={() => this.emailAddress.focus()}
+                                ref={(input) => this.lastNameInput = input}
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                                placeholderTextColor="rgba(255,255,255,255)"
+                                onChange={text => this.onChangeText(text.nativeEvent.text, 'lastName')}
+                            />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Email Address"
                                 returnKeyType="next"
                                 onSubmitEditing={() => this.passwordInput.focus()}
+                                ref={(input) => this.emailAddress = input}
                                 keyboardType="email-address"
                                 autoCapitalize="none"
                                 autoCorrect={false}
@@ -108,15 +130,25 @@ export default class LoginForm extends Component {
                                 style={styles.input}
                                 placeholder="Password"
                                 secureTextEntry
-                                returnKeyType="go"
+                                returnKeyType="next"
+                                onSubmitEditing={() => this.passwordConfirmInput.focus()}
                                 ref={(input) => this.passwordInput = input}
                                 placeholderTextColor="rgba(255,255,255,255)"
                                 onChange={text => this.onChangeText(text.nativeEvent.text, 'password')}
                             />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Confirm Password"
+                                secureTextEntry
+                                returnKeyType="go"
+                                ref={(input) => this.passwordConfirmInput = input}
+                                placeholderTextColor="rgba(255,255,255,255)"
+                                onChange={text => this.onChangeText(text.nativeEvent.text, 'passwordConfirm')}
+                            />
                             <TouchableOpacity style={styles.buttonContainer}>
                                 <Text style={styles.buttonText} onPress={(e) => this.onSubmit()}>Login</Text>
                             </TouchableOpacity>
-                            <Text style={styles.signUpText} onPress={(e) => this.props.navi.navigate('Register')}>Doesn't Have an account yet? Sign Up</Text>
+                            <Text style={styles.signUpText} onPress={(e) => this.props.navi.navigate('Login')}>Already Have an account? Log In</Text>
                         </View>
                     )
                 }
