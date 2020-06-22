@@ -1,9 +1,63 @@
 # paw-user-FE
 
-* Install Expo.io first 
+## How to Run
 
-1. yarn install
-2. yarn start -> i for ios simulator
+Clone this project,
+
+1. Install Expo.io first 
+
+```bash
+npm install expo-cli --global
+```
+
+2. To check if you have Node.js installed, run this command in your terminal:
+
+```bash
+node -v
+```
+
+* To confirm that you have npm installed you can run this command in your terminal :
+
+```bash
+npm -v
+```
+
+2. If you don't have Node.js : 
+
+```bash
+https://nodejs.org
+```
+
+3. Install all dependencies 
+
+```bash
+npm install
+```
+
+4. Start the application
+
+```bash
+npm start
+```
+
+5. Select the simulation device
+
+```bash
+i -> iOS Simulator
+a -> Android emulator
+w -> Web
+```
+
+## Documentation
 
 https://reactnavigation.org/docs/getting-started
 https://expo.github.io/vector-icons/
+
+
+## TODO
+
+- [x] Login Page
+- [x] SignUp Page
+- [ ] Home Page
+- [ ] Navigation
+- [ ] Settings

@@ -36,11 +36,11 @@ export default function Home() {
   ];
 
   return (
-    <View style={{width: '100%', paddingTop: 40, flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-      <Text>Friend List</Text>
+    <View style={{width: '100%', flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+      {/*<Text>Friend List</Text>*/}
       <FlatList
         data={friends}
-        style={{paddingTop: 15, width: '100%'}}
+        style={{width: '100%'}}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({item, index}) => (
           <View style={[
