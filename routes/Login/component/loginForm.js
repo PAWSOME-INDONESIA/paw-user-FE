@@ -1,10 +1,9 @@
 import React, { Component } from "react";
-
 import {TextInput, StyleSheet, Text, View, TouchableOpacity, StatusBar} from "react-native";
-
 import Spinner from "../../Spinner/index";
-
 import { AsyncStorage } from 'react-native';
+import {login} from "../../../utils/API";
+import isEmpty from "react-native-web/dist/vendor/react-native/isEmpty";
 
 export default class LoginForm extends Component {
     constructor(props) {
@@ -15,70 +14,57 @@ export default class LoginForm extends Component {
             password: '',
             context: null,
             loading: false,
-            result: ''
+            error: false
         }
         this.onChangeText = this.onChangeText.bind(this)
     }
     onChangeText(text, type){
         if(type === 'email'){
-            console.log(text, 'email')
             this.setState({email: text})
         }
         if(type === 'password'){
-            console.log(text, 'password')
             this.setState({password: text})
         }
     }
-    onSubmit(){
+    async onSubmit() {
         this.setState({
             loading: true
         })
-        let data = {
-            method: 'POST',
-            credentials: 'same-origin',
-            mode: 'same-origin',
-            body: JSON.stringify({
-                email: this.state.email,
-                password: this.state.password
-            }),
-            headers: {
-                'Accept':       'application/json',
-                'Content-Type': 'application/json',
-            }
-        }
-        let abc = fetch('https://demo1998209.mockable.io/clementBMG',{
-            method: 'GET',
-            // body: data
+
+        const param = JSON.stringify({
+            "email": this.state.email, //"jo@test.com"
+            "password": this.state.password //12345
         })
-            .then(response => response.json())  // promise
-            .then(json => {
-                console.log(json.code, 'helo abc')
-                if(json.code === 'SUCCESS'){
-                    this.setState({
-                        loading: false,
-                        result: json.code
-                    })
 
-                    const _storeData = async () => {
-                        try {
-                            await AsyncStorage.setItem(
-                                '@session',
-                                'loggedIn!'
-                            );
-                        } catch (error) {
-                            // Error saving data
-                        }
-                    };
+        login(param).then(res => {
+            if(!isEmpty(res)){
+                this.setState({
+                    loading: false
+                })
 
-                    this.props.onClick(_storeData());
-
-                } else {
-                    this.setState({
-                        loading: true,
-                        result: json.code
-                    })
-                }
-            })
+                const _storeData = async () => {
+                    try {
+                        await AsyncStorage.setItem(
+                            '@session',
+                            `${res.user.id}`
+                        );
+                    } catch (error) {
+                        // Error saving data
+                    }
+                };
+                _storeData();
+                this.props.onClick({
+                    goTo: "Home",
+                    user: res
+                });
+            } else {
+                this.setState({
+                    loading: false,
+                    error: true,
+                    result: []
+                })
+            }
+        })
     }
 
     render() {
@@ -93,6 +79,11 @@ export default class LoginForm extends Component {
                         <Spinner/>
                     ) : (
                         <View>
+                            {
+                                this.state.error ? (
+                                    <Text style={styles.error}>email or password doesn't match</Text>
+                                ) : null
+                            }
                             <TextInput
                                 style={styles.input}
                                 placeholder="Username or Email"
@@ -147,6 +138,15 @@ const styles = StyleSheet.create({
     buttonText: {
         textAlign: 'center',
         color: '#fff',
+    },
+    error: {
+        height: 40,
+        marginBottom: 20,
+        paddingHorizontal: 10,
+        color: 'rgba(255,0,0,0.55)',
+        borderRadius: 50,
+        bottom: 25,
+        textAlign: 'center'
     },
     signUpText: {
         textAlign: 'center',

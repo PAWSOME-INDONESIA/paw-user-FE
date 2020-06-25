@@ -44,10 +44,10 @@ export default class Register extends Component {
             <KeyboardAvoidingView behavior="padding" style={styles.container}>
                 <View style={styles.logoContainer}>
                     <Image
-                        source={require('../../assets/pawsome_logo.png')}
+                        source={require('../../assets/ggwp.png')}
                         style={styles.logo}
                     />
-                    <Text style={styles.title}>App designed to help pet lovers</Text>
+                    {/*<Text style={styles.title}>App designed to help pet lovers</Text>*/}
                 </View>
                 <RegisterForm onClick={() => this.props.navigation.navigate("Login")} navi={this.props.navigation}/>
             </KeyboardAvoidingView>
@@ -58,7 +58,7 @@ export default class Register extends Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#d0893e'
+        backgroundColor: '#FF914D'
     },
     logoContainer: {
         alignItems: 'center',

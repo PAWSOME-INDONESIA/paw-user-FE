@@ -95,24 +95,13 @@ export default class RegisterForm extends Component {
                         <View>
                             <TextInput
                                 style={styles.input}
-                                placeholder="First Name"
-                                returnKeyType="next"
-                                onSubmitEditing={() => this.lastNameInput.focus()}
-                                autoCapitalize="none"
-                                autoCorrect={false}
-                                placeholderTextColor="rgba(255,255,255,255)"
-                                onChange={text => this.onChangeText(text.nativeEvent.text, 'firstName')}
-                            />
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Last Name"
+                                placeholder="User Name"
                                 returnKeyType="next"
                                 onSubmitEditing={() => this.emailAddress.focus()}
-                                ref={(input) => this.lastNameInput = input}
                                 autoCapitalize="none"
                                 autoCorrect={false}
                                 placeholderTextColor="rgba(255,255,255,255)"
-                                onChange={text => this.onChangeText(text.nativeEvent.text, 'lastName')}
+                                onChange={text => this.onChangeText(text.nativeEvent.text, 'userName')}
                             />
                             <TextInput
                                 style={styles.input}

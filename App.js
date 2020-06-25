@@ -6,6 +6,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { AsyncStorage } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { AppLoading } from 'expo';
+
 import Home from './routes/Home';
 // @ts-ignore
 import Login from './routes/Login';
@@ -13,6 +15,7 @@ import Login from './routes/Login';
 import Register from './routes/Register';
 import IconCamera from "./components/Icons/IconCamera";
 import Map from "./routes/Map";
+import Profile from "./routes/Profile";
 
 function HomeScreen() {
   return (
@@ -22,11 +25,15 @@ function HomeScreen() {
   );
 }
 
-function SettingsScreen() {
+function SettingsScreen(props) {
+    const logout = () => {
+        AsyncStorage.removeItem('@session')
+        props.navigation.navigate('Login')
+    }
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      {/*<Text>Settings!</Text>*/}
-      <Button title={'Log Out'} onPress={() => AsyncStorage.removeItem('@session')}/>
+      <Text>Settings!</Text>
+      <Button title={'Log Out'} onPress={() => logout()}/>
     </View>
   );
 }
@@ -36,6 +43,12 @@ function MapScreen() {
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <Map/>
         </View>
+    );
+}
+
+function ProfileScreen() {
+    return (
+        <Profile/>
     );
 }
 
@@ -74,7 +87,7 @@ function HomeIconWithBadge(props) {
 
 const Tab = createBottomTabNavigator();
 
-function MyTabs() {
+function MyTabs(props) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -115,6 +128,14 @@ function MyTabs() {
                   color={color}
               />
             );
+          } else if (route.name === 'Profile') {
+              return (
+                  <Ionicons
+                      name={focused ? 'ios-happy' : 'ios-contact'}
+                      size={size}
+                      color={color}
+                  />
+              );
           }
         },
       })}
@@ -127,6 +148,7 @@ function MyTabs() {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Post" component={MapScreen} />
       <Tab.Screen name="Map" component={MapScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );

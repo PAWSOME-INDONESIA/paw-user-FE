@@ -1,72 +1,91 @@
 import React from 'react';
-import {StyleSheet, Text, View, FlatList, Image} from 'react-native';
+import {StyleSheet, Text, View, FlatList, Image, ActivityIndicator} from 'react-native';
 
 //FlatList -> used for creating and mapping a list
 
 export default function Home() {
-  const friends = [
-    {
-      name: 'clement',
-      image: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-    },
-    {
-      name: 'johanes',
-      image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcSG75DgbSzWIFBiaL_hs3knLhg_VZFVGVpeagz0arNBtfqPDwol&usqp=CAU',
-    },
-    {
-      name: 'bill',
-      image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcSfMnEnvwDETiaP51zH1w5nmKsZzcdnxjaz3IKyBsEfGI8YKmsb&usqp=CAU',
-    },
-    {
-      name: 'devin',
-      image: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-    },
-    {
-      name: 'steve',
-      image: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-    },
-    {
-      name: 'kenneth',
-      image: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-    },
-    {
-      name: 'djoni',
-      image: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
-    },
-  ];
+
+  const [data, setData] = React.useState([]);
+  const [page, setPage] = React.useState(1);
+  const [isLoading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    getData();
+  }, [page])
+
+  const getData = async () => {
+    const url = 'https://jsonplaceholder.typicode.com/photos?_limit=10&_page=' + page
+    fetch(url).then((res) => res.json())
+      .then((responseJson) => {
+        setData(data.concat(responseJson))
+        setLoading(false)
+      })
+  };
+
+  const renderRow = ({item}) => {
+    return(
+      <View style={styles.item}>
+          <Image style={styles.itemImage} source={{uri: item.url}} />
+          <Text style={styles.itemText}>{item.title}</Text>
+          <Text style={styles.itemText}>{item.id}</Text>
+      </View>
+    )
+  };
+
+  const handleMore = () => {
+    setPage(page + 1)
+    setLoading(true)
+  };
+
+  const handleScroll = ({event}: { event: any }) => {
+    console.log(event, 'helo scroll')
+  }
+
+  const footer = () => {
+    return(
+      isLoading ? (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" />
+      </View> ) : null
+    )
+  };
 
   return (
     <View style={{width: '100%', flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-      {/*<Text>Friend List</Text>*/}
       <FlatList
-        data={friends}
-        style={{width: '100%'}}
+        data={data}
+        style={styles.container}
         keyExtractor={(item, index) => index.toString()}
-        renderItem={({item, index}) => (
-          <View style={[
-            styles.rowStyle,
-            index % 2 > 0 ? styles.itemOdd : styles.itemEven
-            ]}>
-            <Image style={{marginLeft: 25, borderRadius: 50/2, width: 50, height: 50}} source={{uri: item.image}} />
-            <Text style={{marginLeft: 25, lineHeight: 50}}>{item.name}</Text>
-          </View>
-        )}/>
+        renderItem={renderRow}
+        onEndReached={handleMore}
+        onEndReachedThreshold={0}
+        ListFooterComponent={footer}
+        refreshing={isLoading}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  rowStyle: {
-    flexDirection: 'row',
-    paddingHorizontal: 25,
-    paddingVertical: 25,
-    borderColor: 'lightgrey',
-    borderBottomWidth: 1
+  container: {
+    marginTop: 20
   },
-  itemOdd: {
-    backgroundColor: '#f1f1f1'
+  loader: {
+    marginTop: 10,
+    alignItems: 'center'
   },
-  itemEven: {
-    backgroundColor: '#ffffff'
+  item: {
+    borderBottomColor: '#000000',
+    borderBottomWidth: 1,
+    marginBottom: 10
+  },
+  itemImage: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'cover'
+  },
+  itemText: {
+    fontSize: 16,
+    padding: 5
   }
 });

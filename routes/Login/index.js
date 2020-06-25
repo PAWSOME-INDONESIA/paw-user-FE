@@ -44,12 +44,18 @@ export default class Login extends Component {
             <KeyboardAvoidingView behavior="padding" style={styles.container}>
                 <View style={styles.logoContainer}>
                     <Image
-                        source={require('../../assets/pawsome_logo.png')}
+                        source={require('../../assets/ggwp.png')}
                         style={styles.logo}
                     />
-                    <Text style={styles.title}>App designed to help pet lovers</Text>
+                    {/*<Text style={styles.title}>Woof...</Text>*/}
                 </View>
-                <LoginForm onClick={() => this.props.navigation.navigate("Home")} navi={this.props.navigation}/>
+                <LoginForm
+                    onClick={(res) => {
+                        const goTo = res.goTo;
+                        const user = res.user
+                        this.props.navigation.navigate(goTo, {'user': user})}
+                    }
+                    navi={this.props.navigation}/>
             </KeyboardAvoidingView>
         )
     }
@@ -58,7 +64,7 @@ export default class Login extends Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#d0893e'
+        backgroundColor: '#FF914D'
     },
     logoContainer: {
         alignItems: 'center',
@@ -66,8 +72,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     logo: {
-        width: 150,
-        height: 150
+        width: 200,
+        height: 200
     },
     title: {
         color: '#ffffff',
