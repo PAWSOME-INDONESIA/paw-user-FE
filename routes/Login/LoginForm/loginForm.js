@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import {TextInput, StyleSheet, Text, View, TouchableOpacity, StatusBar} from "react-native";
 import Spinner from "../../Spinner/index";
-import { AsyncStorage } from 'react-native';
 import {login} from "../../../utils/API";
 import isEmpty from "react-native-web/dist/vendor/react-native/isEmpty";
+import {storeToken} from "../../../utils/store";
 
 export default class LoginForm extends Component {
     constructor(props) {
@@ -39,23 +39,14 @@ export default class LoginForm extends Component {
         login(param).then(res => {
             if(!isEmpty(res)){
                 this.setState({
-                    loading: false
+                  loading: false,
+                  error: false
                 })
 
-                const _storeData = async () => {
-                    try {
-                        await AsyncStorage.setItem(
-                            '@session',
-                            `${res.user.id}`
-                        );
-                    } catch (error) {
-                        // Error saving data
-                    }
-                };
-                _storeData();
+              storeToken(res.user.id)
                 this.props.onClick({
-                    goTo: "Home",
-                    user: res
+                  goTo: "Home",
+                  user: res
                 });
             } else {
                 this.setState({
@@ -86,6 +77,7 @@ export default class LoginForm extends Component {
                             }
                             <TextInput
                                 style={styles.input}
+                                value={this.state.email}
                                 placeholder="Username or Email"
                                 returnKeyType="next"
                                 onSubmitEditing={() => this.passwordInput.focus()}
@@ -98,6 +90,7 @@ export default class LoginForm extends Component {
                             <TextInput
                                 style={styles.input}
                                 placeholder="Password"
+                                value={this.state.password}
                                 secureTextEntry
                                 returnKeyType="go"
                                 ref={(input) => this.passwordInput = input}

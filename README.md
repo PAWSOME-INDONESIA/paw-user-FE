@@ -52,6 +52,9 @@ w -> Web
 
 https://reactnavigation.org/docs/getting-started
 https://expo.github.io/vector-icons/
+https://medium.com/@andi.gu.ca/a-collapsing-navbar-with-tabs-in-react-native-e80790588830
+https://docs.expo.io/tutorial/sharing/
+https://www.flaticon.com/free-icon/pawprint_1076928
 
 
 ## TODO

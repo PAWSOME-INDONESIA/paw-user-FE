@@ -1,55 +1,55 @@
 import React from 'react';
-import {StyleSheet, Text, View, StatusBar, TouchableOpacity, Button} from 'react-native';
+import {StyleSheet, Text, View, Button, ActivityIndicator} from 'react-native';
 import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { AsyncStorage } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { AppLoading } from 'expo';
 
-import Home from './routes/Home';
-// @ts-ignore
-import Login from './routes/Login';
-// @ts-ignore
-import Register from './routes/Register';
-import IconCamera from "./components/Icons/IconCamera";
 import Map from "./routes/Map";
+import Home from './routes/Home';
+import Login from './routes/Login';
+import Post from './routes/Post';
 import Profile from "./routes/Profile";
+import Register from './routes/Register';
 
-function HomeScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Home/>
-    </View>
-  );
-}
+import IconCamera from "./components/Icons/IconCamera";
+
+import { logoutAPI } from "./utils/API";
 
 function SettingsScreen(props) {
+
+  const [isLoading, setLoading] = React.useState(false);
+
     const logout = () => {
-        AsyncStorage.removeItem('@session')
-        props.navigation.navigate('Login')
+    setLoading(true)
+      const param = JSON.stringify({
+        "email": "jo@test.com"
+      })
+
+      logoutAPI(param).then(res => {
+
+        if(res === 'success') {
+          AsyncStorage.removeItem('@session')
+          props.navigation.navigate('Login')
+        } else {
+          alert('failed to logout')
+        }
+        setLoading(false)
+      })
     }
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Settings!</Text>
-      <Button title={'Log Out'} onPress={() => logout()}/>
+    <View style={styles.logout}>
+      {isLoading ?
+        (<ActivityIndicator color={"#000000"} />)
+        :
+        (<React.Fragment>
+            <Text>Settings!</Text>
+            <Button title={'Log Out'} onPress={() => logout()}/>
+          </React.Fragment>)}
     </View>
   );
-}
-
-function MapScreen() {
-    return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Map/>
-        </View>
-    );
-}
-
-function ProfileScreen() {
-    return (
-        <Profile/>
-    );
 }
 
 function IconWithBadge({ name, badgeCount, color, size }) {
@@ -145,10 +145,10 @@ function MyTabs(props) {
         inactiveTintColor: 'gray',
       }}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Post" component={MapScreen} />
-      <Tab.Screen name="Map" component={MapScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Home" component={Home} />
+      <Tab.Screen name="Post" component={Post} />
+      <Tab.Screen name="Map" component={Map} />
+      <Tab.Screen name="Profile" component={Profile} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
@@ -225,4 +225,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  logout: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white'
+  }
 });

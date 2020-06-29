@@ -21,11 +21,9 @@ export default class RegisterForm extends Component {
     }
     onChangeText(text, type){
         if(type === 'email'){
-            console.log(text, 'email')
             this.setState({email: text})
         }
         if(type === 'password'){
-            console.log(text, 'password')
             this.setState({password: text})
         }
     }
@@ -52,7 +50,6 @@ export default class RegisterForm extends Component {
         })
             .then(response => response.json())  // promise
             .then(json => {
-                console.log(json.code, 'helo abc')
                 if(json.code === 'SUCCESS'){
                     this.setState({
                         loading: false,

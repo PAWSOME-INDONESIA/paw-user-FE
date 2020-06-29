@@ -1,22 +1,7 @@
 import React, { Component } from 'react';
-import {Image, KeyboardAvoidingView, StyleSheet, Text, View, AsyncStorage} from "react-native";
+import {Image, KeyboardAvoidingView, StyleSheet, Text, View} from "react-native";
 import RegisterForm from "./component/registerForm";
-
-export const isSignedIn = () => {
-    return new Promise((resolve, reject) => {
-        AsyncStorage.getItem('@session')
-            .then(res => {
-                if (res !== null) {
-                    resolve(true);
-                } else {
-                    resolve(false);
-                }
-            })
-            .catch(err => reject(err));
-    });
-};
-
-// const token = await isSignedIn();
+import {getToken} from "../../utils/store";
 
 export default class Register extends Component {
     constructor(props) {
@@ -27,19 +12,13 @@ export default class Register extends Component {
     }
 
     componentDidMount() {
-        AsyncStorage.getItem("@session")
+        getToken()
             .then(value => {
                 this.setState({ "authenticated": value });
             })
     }
 
     render() {
-        // this.props.navigation.navigate("Home");
-        // if(this.state.authenticated){
-        //     this.props.navigation.navigate("Home")
-        // } else {
-        //     this.props.navigation.navigate("Login")
-        // }
         return(
             <KeyboardAvoidingView behavior="padding" style={styles.container}>
                 <View style={styles.logoContainer}>

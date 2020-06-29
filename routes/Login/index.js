@@ -1,64 +1,32 @@
-import React, { Component } from 'react';
-import {Image, KeyboardAvoidingView, StyleSheet, Text, View, AsyncStorage} from "react-native";
-import LoginForm from "./component/loginForm";
+import React from 'react';
+import {Image, KeyboardAvoidingView, StyleSheet, View} from "react-native";
+import LoginForm from "./LoginForm/loginForm";
+import {getToken} from "../../utils/store";
 
-export const isSignedIn = () => {
-    return new Promise((resolve, reject) => {
-        AsyncStorage.getItem('@session')
-            .then(res => {
-                if (res !== null) {
-                    resolve(true);
-                } else {
-                    resolve(false);
-                }
-            })
-            .catch(err => reject(err));
-    });
-};
-
-// const token = await isSignedIn();
-
-export default class Login extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            authenticated: null,
-        }
+export default function Login({navigation}) {
+  getToken().then(res => {
+    if(res) {
+      navigation.navigate('Home')
     }
+  })
 
-    componentDidMount() {
-        AsyncStorage.getItem("@session")
-            .then(value => {
-                this.setState({ "authenticated": value });
-            })
-    }
-
-    render() {
-        // this.props.navigation.navigate("Home");
-        if(this.state.authenticated){
-            this.props.navigation.navigate("Home")
-        } else {
-            this.props.navigation.navigate("Login")
-        }
-        return(
-            <KeyboardAvoidingView behavior="padding" style={styles.container}>
-                <View style={styles.logoContainer}>
-                    <Image
-                        source={require('../../assets/ggwp.png')}
-                        style={styles.logo}
-                    />
-                    {/*<Text style={styles.title}>Woof...</Text>*/}
-                </View>
-                <LoginForm
-                    onClick={(res) => {
-                        const goTo = res.goTo;
-                        const user = res.user
-                        this.props.navigation.navigate(goTo, {'user': user})}
-                    }
-                    navi={this.props.navigation}/>
-            </KeyboardAvoidingView>
-        )
-    }
+  return(
+    <KeyboardAvoidingView behavior="padding" style={styles.container}>
+      <View style={styles.logoContainer}>
+        <Image
+          source={require('../../assets/ggwp.png')}
+          style={styles.logo}
+        />
+      </View>
+      <LoginForm
+        onClick={(res) => {
+          const goTo = res.goTo;
+          const user = res.user
+          navigation.navigate(goTo, {'user': user})
+        }}
+        navi={navigation}/>
+    </KeyboardAvoidingView>
+  )
 }
 
 const styles = StyleSheet.create({

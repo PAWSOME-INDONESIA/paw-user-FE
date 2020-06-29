@@ -1,8 +1,20 @@
-import React from 'react';
-import MapView, {Marker} from 'react-native-maps';
-import {StyleSheet, Text, View, Dimensions, Image, Button} from 'react-native';
+import React, {useState} from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  TouchableOpacity
+} from 'react-native';
+import EditProfile from "./EditProfile";
 
 export default function Profile() {
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const onEditProfile = () => {
+    setModalVisible(!modalVisible)
+  };
+
   return (
     <View style={styles.container}>
       <View style={{marginTop: 30, alignItems: 'center', flexDirection: 'row'}}>
@@ -27,10 +39,12 @@ export default function Profile() {
       </View>
       {/*userName text*/}
       <Text style={styles.userName}>Bill Clinton</Text>
+      <Text style={styles.description}>Bill is shit head with multiple body mass index that will be helpful in the future</Text>
       {/*editProfile button*/}
-      <View style={styles.editProfile}>
+      <TouchableOpacity onPress={onEditProfile} style={styles.editProfile}>
         <Text style={styles.editProfileText}>Edit Profile</Text>
-      </View>
+      </TouchableOpacity>
+      <EditProfile open={modalVisible} close={() => onEditProfile()}/>
     </View>
   );
 }
@@ -58,6 +72,11 @@ const styles = StyleSheet.create({
     marginLeft: 15,
     fontSize: 16,
     fontWeight: '600'
+  },
+  description : {
+    marginTop: 15,
+    marginLeft: 15,
+    fontSize: 14,
   },
   statsContainer : {
     flexDirection: 'row',
@@ -90,5 +109,43 @@ const styles = StyleSheet.create({
   },
   editProfileText: {
     color: 'white',
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "flex-end",
+    alignItems: "center",
+    bottom: -20,
+  },
+  modalView: {
+    margin: 20,
+    width: '100%',
+    height: '95%',
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  openButton: {
+    backgroundColor: "#F194FF",
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center"
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center"
   }
 });
