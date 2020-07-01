@@ -1,15 +1,20 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   StyleSheet,
   Text,
   View,
   Image,
-  TouchableOpacity
+  TouchableOpacity, AsyncStorage,
 } from 'react-native';
 import EditProfile from "./EditProfile";
+import {getUser} from "../../utils/API";
+import {normalizeUserData} from "../../utils/normalizeUserProfile";
 
-export default function Profile() {
+export default function Profile(props) {
   const [modalVisible, setModalVisible] = useState(false);
+  const [userProfile, setUserProfile] = useState(props.userProfile);
+
+  console.log(userProfile, 'rekt')
 
   const onEditProfile = () => {
     setModalVisible(!modalVisible)
@@ -38,8 +43,8 @@ export default function Profile() {
         </View>
       </View>
       {/*userName text*/}
-      <Text style={styles.userName}>Bill Clinton</Text>
-      <Text style={styles.description}>Bill is shit head with multiple body mass index that will be helpful in the future</Text>
+      <Text style={styles.userName}>{userProfile.userName}</Text>
+      <Text style={styles.description}>{userProfile.bio}</Text>
       {/*editProfile button*/}
       <TouchableOpacity onPress={onEditProfile} style={styles.editProfile}>
         <Text style={styles.editProfileText}>Edit Profile</Text>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {StyleSheet, Text, View, Button, ActivityIndicator} from 'react-native';
 import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
@@ -16,7 +16,8 @@ import Register from './routes/Register';
 
 import IconCamera from "./components/Icons/IconCamera";
 
-import { logoutAPI } from "./utils/API";
+import {getUser, logoutAPI} from "./utils/API";
+import {normalizeUserData} from "./utils/normalizeUserProfile";
 
 function SettingsScreen(props) {
 
@@ -24,19 +25,17 @@ function SettingsScreen(props) {
 
     const logout = () => {
     setLoading(true)
-      const param = JSON.stringify({
-        "email": "jo@test.com"
-      })
 
-      logoutAPI(param).then(res => {
-
-        if(res === 'success') {
-          AsyncStorage.removeItem('@session')
-          props.navigation.navigate('Login')
-        } else {
-          alert('failed to logout')
-        }
-        setLoading(false)
+      AsyncStorage.getItem('@session').then(res => {
+        logoutAPI(res).then(result => {
+          if(result === 'success') {
+            AsyncStorage.removeItem('@session')
+            props.navigation.navigate('Login')
+          } else {
+            alert('failed to logout')
+          }
+          setLoading(false)
+        })
       })
     }
   return (
@@ -88,6 +87,18 @@ function HomeIconWithBadge(props) {
 const Tab = createBottomTabNavigator();
 
 function MyTabs(props) {
+  const [userProfile, setUserProfile] = useState(props.route.params);
+
+  function ProfileTab() {
+    return(
+      <React.Fragment>
+        <Profile
+          userProfile={userProfile}
+        />
+      </React.Fragment>
+    )
+  }
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -148,7 +159,12 @@ function MyTabs(props) {
       <Tab.Screen name="Home" component={Home} />
       <Tab.Screen name="Post" component={Post} />
       <Tab.Screen name="Map" component={Map} />
-      <Tab.Screen name="Profile" component={Profile} />
+      {/*{userProfile.map((res, key) =>*/}
+      {/*  (*/}
+      {/*    <Tab.Screen name="Profile" children={()=> <Profile userProfile={userProfile} key={key}/>} />*/}
+      {/*  )*/}
+      {/*)}*/}
+      <Tab.Screen name="Profile" component={ProfileTab} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );

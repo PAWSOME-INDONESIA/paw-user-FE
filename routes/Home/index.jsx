@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useReducer, useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,7 +10,21 @@ import {
   TouchableWithoutFeedback
 } from 'react-native';
 
-export default function Home() {
+const Reducer = (state, action) => {
+  if(action.type === 'first'){
+    const first = {...state.first};
+
+    first[action.name] = action.value;
+
+    return {
+      ...state,
+      first: first
+    }
+  }
+  return state
+}
+
+export default function Home({route, navigation}) {
 
   const [feed, setFeed] = useState([]);
   const [page, setPage] = useState(1);
@@ -18,6 +32,11 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [likes, setLikes] = useState(false);
+  const [state, dispatch] = useReducer(Reducer, {
+    first: {}
+  })
+
+  // console.log(route.params,'helo params')
 
   useEffect(() => {
     loadPage();

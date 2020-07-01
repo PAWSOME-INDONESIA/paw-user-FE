@@ -1,12 +1,18 @@
 import React from 'react';
 import {Image, KeyboardAvoidingView, StyleSheet, View} from "react-native";
 import LoginForm from "./LoginForm/loginForm";
-import {getToken} from "../../utils/store";
+import { getToken } from "../../utils/store";
+import {getUser} from "../../utils/API";
+import {normalizeUserData} from "../../utils/normalizeUserProfile";
 
 export default function Login({navigation}) {
   getToken().then(res => {
     if(res) {
-      navigation.navigate('Home')
+      getUser(res).then(
+        result => {
+          navigation.navigate("Home", normalizeUserData(result))
+        }
+      )
     }
   })
 
