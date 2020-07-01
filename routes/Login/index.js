@@ -27,8 +27,7 @@ export default function Login({navigation}) {
       <LoginForm
         onClick={(res) => {
           const goTo = res.goTo;
-          const user = res.user
-          navigation.navigate(goTo, {'user': user})
+          navigation.navigate(goTo, normalizeUserData(res.user))
         }}
         navi={navigation}/>
     </KeyboardAvoidingView>

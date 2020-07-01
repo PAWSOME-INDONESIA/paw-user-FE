@@ -14,8 +14,6 @@ export default function Profile(props) {
   const [modalVisible, setModalVisible] = useState(false);
   const [userProfile, setUserProfile] = useState(props.userProfile);
 
-  console.log(userProfile, 'rekt')
-
   const onEditProfile = () => {
     setModalVisible(!modalVisible)
   };
@@ -49,7 +47,7 @@ export default function Profile(props) {
       <TouchableOpacity onPress={onEditProfile} style={styles.editProfile}>
         <Text style={styles.editProfileText}>Edit Profile</Text>
       </TouchableOpacity>
-      <EditProfile open={modalVisible} close={() => onEditProfile()}/>
+      <EditProfile open={modalVisible} close={() => onEditProfile()} userProfile={userProfile}/>
     </View>
   );
 }

@@ -89,6 +89,8 @@ const Tab = createBottomTabNavigator();
 function MyTabs(props) {
   const [userProfile, setUserProfile] = useState(props.route.params);
 
+  // console.log(props.route.params, 'helo props 2')
+
   function ProfileTab() {
     return(
       <React.Fragment>

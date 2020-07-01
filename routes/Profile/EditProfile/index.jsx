@@ -4,7 +4,8 @@ import {
   Text,
   View,
   Modal,
-  TouchableHighlight
+  TouchableHighlight,
+  Image
 } from 'react-native';
 
 export default function EditProfile(props) {
@@ -22,7 +23,7 @@ export default function EditProfile(props) {
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <Text style={styles.modalText}>Edit Profile</Text>
-
+            <Image style={styles.imageProfile} source={require('../../../assets/dog.png')}/>
             <TouchableHighlight
               style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
               onPress={() => {
@@ -33,6 +34,11 @@ export default function EditProfile(props) {
             </TouchableHighlight>
           </View>
         </View>
+        <View style={styles.editProfileForm}>
+          <Text style={styles.formText}>
+            Name
+          </Text>
+        </View>
       </Modal>
     </View>
   );
@@ -42,6 +48,18 @@ const styles = StyleSheet.create({
   container : {
     flex: 1,
     backgroundColor: 'white'
+  },
+  editProfileForm: {
+    flex: 1,
+    backgroundColor: 'white',
+    top: -150
+  },
+  formText: {
+    paddingLeft: 20
+  },
+  imageProfile: {
+    width: 100,
+    height: 100
   },
   editProfile: {
     marginTop: 20,
@@ -60,7 +78,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end",
     alignItems: "center",
-    bottom: -20,
+    bottom: -40,
   },
   modalView: {
     margin: 20,
@@ -92,6 +110,8 @@ const styles = StyleSheet.create({
   },
   modalText: {
     marginBottom: 15,
-    textAlign: "center"
+    textAlign: "center",
+    fontWeight: "600",
+    fontSize: 20
   }
 });

@@ -14,6 +14,7 @@ export default function Map() {
           longitudeDelta: 0.01,
         }}
         zoomEnabled={false}
+        provider={'google'}
       >
         <Marker
           // image={require("../../assets/dog.png")}

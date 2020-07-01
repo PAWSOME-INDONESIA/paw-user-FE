@@ -46,7 +46,7 @@ export default class LoginForm extends Component {
               storeToken(res.user.id)
                 this.props.onClick({
                   goTo: "Home",
-                  user: res
+                  user: res.user
                 });
             } else {
                 this.setState({
