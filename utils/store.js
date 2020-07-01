@@ -12,7 +12,9 @@ export async function storeToken(user) {
 export async function getToken() {
   try {
     let userData = await AsyncStorage.getItem("@session");
-    let data = JSON.parse(userData);
+
+    console.log(userData, 'helo world')
+    let data = userData
 
     return data
   } catch (error) {
