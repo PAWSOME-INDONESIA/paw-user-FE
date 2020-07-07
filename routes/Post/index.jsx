@@ -1,6 +1,7 @@
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View, Button } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { uploadImage } from "../../utils/API";
 
 export default function Post() {
   let [selectedImage, setSelectedImage] = React.useState(null);
@@ -17,6 +18,22 @@ export default function Post() {
     if (pickerResult.cancelled === true) {
       return;
     }
+
+    let localUri = pickerResult.uri;
+    let filename = localUri.split('/').pop();
+
+    // Infer the type of the image
+    let match = /\.(\w+)$/.exec(filename);
+    let type = match ? `image/${match[1]}` : `image`;
+
+    // Upload the image using the fetch and FormData APIs
+    let formData = new FormData();
+    // Assume "photo" is the name of the form field the server expects
+    formData.append('image', { uri: localUri, name: filename, type });
+
+    uploadImage(formData).then(val => {
+      console.log(val, 'helo upload')
+    })
 
     setSelectedImage({localUri: pickerResult.uri});
   };

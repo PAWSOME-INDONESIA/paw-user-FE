@@ -28,12 +28,14 @@ function SettingsScreen(props) {
 
       AsyncStorage.getItem('@session').then(res => {
         logoutAPI(res).then(result => {
-          if(result === 'success') {
-            AsyncStorage.removeItem('@session')
-            props.navigation.navigate('Login')
-          } else {
-            alert('failed to logout')
-          }
+          AsyncStorage.removeItem('@session')
+          props.navigation.navigate('Login')
+
+          // if(result === 'success') {
+          //
+          // } else {
+          //   alert('failed to logout')
+          // }
           setLoading(false)
         })
       })

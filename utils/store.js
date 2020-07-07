@@ -13,8 +13,9 @@ export async function getToken() {
   try {
     let userData = await AsyncStorage.getItem("@session");
 
-    console.log(userData, 'helo world')
     let data = userData
+
+    console.log(data,'user token')
 
     return data
   } catch (error) {

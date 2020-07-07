@@ -6,7 +6,7 @@ export const normalizeUserData = (user) => {
     id: user.id,
     imageUrl: user.imageUrl,
     phoneNumber: user.phoneNumber,
-    userName: user.username
+    username: user.username
   }
 
   return userProfile

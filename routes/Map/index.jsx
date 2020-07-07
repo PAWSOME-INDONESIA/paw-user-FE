@@ -22,7 +22,7 @@ export default function Map() {
           longitudeDelta: 0.0421,
         }}
         region={region}
-        zoomEnabled={false}
+        zoomEnabled={true}
         provider={PROVIDER_GOOGLE}
       >
         <Marker
@@ -47,7 +47,7 @@ export default function Map() {
           title={'Pet B'}
           description={'This is a description of the marker'}
         >
-          <Image source={require("../../assets/circle-color.png")} style={{height: 150, width: 150 }} />
+          {/*<Image source={require("../../assets/dog.png")} style={{height: 50, width: 50 }} />*/}
         </Marker>
 
         <Marker
