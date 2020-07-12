@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View, Button } from 'react-native';
+import {Image, StyleSheet, Text, TouchableOpacity, View, Button, TextInput} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadImage } from "../../utils/API";
 
@@ -51,7 +51,7 @@ export default function Post() {
 
   return (
     <View style={styles.container}>
-      <Image source={{ uri: 'https://i.pinimg.com/originals/db/e6/b9/dbe6b90d0fd0d209001cb64eefd038d7.gif' }} style={styles.logo} />
+      {/*<Image source={{ uri: 'https://i.pinimg.com/originals/db/e6/b9/dbe6b90d0fd0d209001cb64eefd038d7.gif' }} style={styles.logo} />*/}
       <Text style={styles.instructions}>
         Share your paw stories
       </Text>
@@ -59,6 +59,23 @@ export default function Post() {
       <TouchableOpacity onPress={openImagePickerAsync} style={styles.button}>
         <Text style={styles.buttonText}>Choose a photo</Text>
       </TouchableOpacity>
+
+      <View style={{ marginTop: 80, alignItems: 'center' }}>
+        <Text category="h4">Post Details</Text>
+        <TextInput
+          placeholder="Enter title of the post"
+          style={{ margin: 20 }}
+          value={'this.state.title'}
+          onChangeText={title => console.log(title)}
+        />
+        <TextInput
+          placeholder="Enter description"
+          style={{ margin: 20 }}
+          value={'this.state.description'}
+          onChangeText={description => console.log(description)}
+        />
+        <Button onPress={() => alert('submit')} title={'Submit'} />
+      </View>
     </View>
   );
 }

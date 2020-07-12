@@ -16,7 +16,7 @@ import Register from './routes/Register';
 
 import IconCamera from "./components/Icons/IconCamera";
 
-import {getUser, logoutAPI} from "./utils/API";
+import {getFollowers, doLogout, getPet, getFollowings} from "./utils/API";
 import {normalizeUserData} from "./utils/normalizeUserProfile";
 
 function SettingsScreen(props) {
@@ -27,7 +27,7 @@ function SettingsScreen(props) {
     setLoading(true)
 
       AsyncStorage.getItem('@session').then(res => {
-        logoutAPI(res).then(result => {
+        doLogout(res).then(result => {
           AsyncStorage.removeItem('@session')
           props.navigation.navigate('Login')
 
@@ -90,16 +90,77 @@ const Tab = createBottomTabNavigator();
 
 function MyTabs(props) {
   const [userProfile, setUserProfile] = useState(props.route.params);
+  const [posts, setPosts] = useState([]);
 
-  // console.log(props.route.params, 'helo props 2')
+  const [lastID, setLastID] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [petCounter, setPetCounter] = useState(0);
+  const [followersCounter, setFollowersCounter] = useState(0);
+  const [followingsCounter, setFollowingsCounter] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    loadPosts()
+  },[])
+
+  const loadPosts = async (pageNum = page, shouldRefresh = false) => {
+    if(total && page > total) return;
+
+    setLoading(true)
+
+    const store = await AsyncStorage.getItem('@session').then(res => {return res})
+
+    let value = store;
+    value = value.replace(/^"|"$/g, '');
+
+    const response = await fetch(`https://paw-user-yej2q77qka-an.a.run.app/post/user-profile?userID=${value}&lastID=${lastID}&limit=12`)
+    const fetchPets = await getPet(store, 'false')
+    const fetchFollowers =  await getFollowers(store)
+    const fetchFollowings = await getFollowings(store)
+
+    const data = await response.json()
+    // const totalItems = response.headers.get('X-Total-Count')
+    const totalItems = 11
+    const res = data.data.posts
+
+    setTotal(Math.floor(totalItems/5))
+
+    if(res === null){
+      setLoading(false)
+      setLastID('')
+      setPosts([...posts])
+      return
+    }
+
+    setPosts(shouldRefresh ? res : [...posts, ...res])
+    setPage(pageNum + 1)
+    setLastID(res[res.length - 1].id)
+    setLoading(false)
+    setPetCounter(fetchPets.length)
+    setFollowersCounter(fetchFollowers.length)
+    setFollowingsCounter(fetchFollowings.length)
+  };
 
   function ProfileTab() {
     return(
-      <React.Fragment>
-        <Profile
-          userProfile={userProfile}
-        />
-      </React.Fragment>
+      <Profile
+        userProfile={userProfile}
+        post={posts}
+        total={total}
+        loading={loading}
+        lastID={lastID}
+        page={page}
+        updateUserProfile={value => setUserProfile(value)}
+        navigator={props.navigation.navigator}
+        totalPets={petCounter}
+        totalFollowers={followersCounter}
+        totalFollowings={followingsCounter}
+        load={(val, bool) => loadPosts(val, bool)}
+        setRefreshing={val=> setRefreshing(val)}
+        refreshing={refreshing}
+      />
     )
   }
 
@@ -181,6 +242,7 @@ function MyTabs(props) {
 // }
 
 export default function App() {
+  console.disableYellowBox = true;
 
   const Stack = createStackNavigator();
 
@@ -189,7 +251,7 @@ export default function App() {
       <Stack.Navigator
         screenOptions={{
           // headerShown: false,
-          gestureEnabled: false
+          // gestureEnabled: true
         }}>
         <Stack.Screen
           name="Login"

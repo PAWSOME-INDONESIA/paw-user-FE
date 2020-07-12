@@ -1,12 +1,12 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import { StyleSheet, Text, TextInput, View, Modal, Image, AsyncStorage, ActivityIndicator, TouchableOpacity, Button } from 'react-native';
 import * as ImagePicker from "expo-image-picker";
 import moment from "moment";
 
 import DatePicker from "react-native-datepicker";
-// import DateTimePicker from '@react-native-community/datetimepicker';
 
 import {editUser, uploadImage} from "../../../utils/API";
+import isEmpty from "react-native-web/dist/vendor/react-native/isEmpty";
 
 export default function EditProfile(props) {
   const [date, setDate] = React.useState(moment(props.userProfile.birthDate).format('YYYY-MM-DD'));
@@ -104,6 +104,8 @@ export default function EditProfile(props) {
     showMode('time');
   };
 
+  const imgUrl = isEmpty(imageUrl) ? require('../../../assets/dog.png') : { uri: imageUrl}
+
   return (
     <View style={styles.container}>
       <Modal
@@ -147,7 +149,7 @@ export default function EditProfile(props) {
               <View style={styles.imageProfile}>
                 <Image source={{ uri: selectedImage.localUri }} style={styles.imageProfile} />
               </View>
-            ) : (<Image style={styles.imageProfile} source={{ uri: imageUrl} || require('../../../assets/dog.png')}/>)
+            ) : (<Image style={styles.imageProfile} source={imgUrl}/>)
             }
             <TouchableOpacity
               style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
@@ -163,7 +165,7 @@ export default function EditProfile(props) {
                 </Text>
                 <TextInput
                   style={styles.form}
-                  placeholder="Username e.g Brown"
+                  placeholder="e.g., Brown"
                   defaultValue={userName}
                   onChangeText={text => setUserName(text)}
                 />
@@ -175,7 +177,7 @@ export default function EditProfile(props) {
                 </Text>
                 <TextInput
                   style={styles.form}
-                  placeholder="Phone Number e.g +62 823..."
+                  placeholder="e.g., +62 823..."
                   defaultValue={phoneNumber}
                   onChangeText={text => setPhoneNumber(text)}
                 />

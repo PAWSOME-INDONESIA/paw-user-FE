@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import {TextInput, StyleSheet, Text, View, TouchableOpacity, StatusBar} from "react-native";
 import Spinner from "../../Spinner/index";
-import {login} from "../../../utils/API";
+import {doLogin} from "../../../utils/API";
 import isEmpty from "react-native-web/dist/vendor/react-native/isEmpty";
 import {storeToken} from "../../../utils/store";
 
@@ -36,7 +36,10 @@ export default class LoginForm extends Component {
             "password": this.state.password //12345
         })
 
-        login(param).then(res => {
+      console.log(param, 'cek login')
+
+        doLogin(param).then(res => {
+          console.log(res, 'cek login 2')
             if(!isEmpty(res)){
                 this.setState({
                   loading: false,

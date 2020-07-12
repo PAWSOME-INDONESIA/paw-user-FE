@@ -8,7 +8,8 @@ const userUrl = "https://paw-user-yej2q77qka-an.a.run.app"
 const imageUrl = "https://paw-image-yej2q77qka-an.a.run.app/image/upload"
 const emailUrl = "https://paw-mail-yej2q77qka-an.a.run.app"
 
-export const login = (body) => {
+// USER
+export const doLogin = (body) => {
     const login  = fetch(userUrl + '/user/login', {
         method: 'POST',
         headers: myHeaders,
@@ -27,8 +28,26 @@ export const login = (body) => {
 
     return login
 }
+export const doRegister = (body) => {
+  const register  = fetch(userUrl + '/user/register', {
+    method: 'POST',
+    headers: myHeaders,
+    body: body,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return result.data.user
+      } else {
+        return {}
+      }
+    })
+    .catch(error => console.log('error', error));
 
-export const logoutAPI = (id) => {
+  return register
+}
+export const doLogout = (id) => {
   let value = id;
   value = value.replace(/^"|"$/g, '');
 
@@ -49,7 +68,6 @@ export const logoutAPI = (id) => {
 
   return logout
 }
-
 export const getUser = (id) => {
   let value = id;
   value = value.replace(/^"|"$/g, '');
@@ -71,7 +89,6 @@ export const getUser = (id) => {
 
   return user
 }
-
 export const editUser = (id, body) => {
   let value = id;
   value = value.replace(/^"|"$/g, '');
@@ -94,12 +111,63 @@ export const editUser = (id, body) => {
 
   return user
 }
+export const getFollowers = (id) => {
+  let value = id;
+  value = value.replace(/^"|"$/g, '');
 
+  const followers  = fetch(userUrl + `/user/${value}/followers`, {
+    method: 'GET',
+    headers: myHeaders,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        if(result.data.followers === null){
+          return []
+        } else {
+          return result.data.followers
+        }
+      } else {
+        return 'No Followers'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return followers
+}
+export const getFollowings = (id) => {
+  let value = id;
+  value = value.replace(/^"|"$/g, '');
+
+  const followings  = fetch(userUrl + `/user/${value}/followings`, {
+    method: 'GET',
+    headers: myHeaders,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        if(result.data.followings === null){
+          return []
+        } else{
+          return result.data.followings
+        }
+      } else {
+        return 'Error'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return followings
+}
+
+// POST
 export const getUserPost = (id, lastID) => {
   let value = id;
   value = value.replace(/^"|"$/g, '');
 
-  const userPost  = fetch(userUrl + `/post/user-profile?userID=${value}&lastID=${lastID}&limit=3`, {
+  const userPost  = fetch(userUrl + `/post/user-profile?userID=${value}&lastID=${lastID}&limit=12`, {
     method: 'GET',
     headers: myHeaders,
     redirect: 'follow'
@@ -117,6 +185,7 @@ export const getUserPost = (id, lastID) => {
   return userPost
 }
 
+// IMAGE
 export const uploadImage = (image) => {
   const upload  = fetch(imageUrl, {
     method: 'POST',
@@ -134,4 +203,29 @@ export const uploadImage = (image) => {
     .catch(error => console.log('error', error));
 
   return upload
+}
+
+// PET
+export const getPet = (id, wLocation) => {
+  let value = id;
+  let value2 = wLocation;
+  value = value.replace(/^"|"$/g, '');
+  wLocation = value2.replace(/^"|"$/g, '');
+
+  const userPet  = fetch(userUrl + `/pet/find-by-userID?userID=${value}&withLocation=${wLocation}`, {
+    method: 'GET',
+    headers: myHeaders,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return result.data.pets
+      } else {
+        return alert('error fetching pets, please try again')
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return userPet
 }

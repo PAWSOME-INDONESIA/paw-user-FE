@@ -4,11 +4,15 @@ import {
   Text,
   View,
   FlatList,
+  Animated,
   Image,
   ActivityIndicator,
   TouchableOpacity,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
+  Dimensions
 } from 'react-native';
+
+import { PinchGestureHandler, State } from 'react-native-gesture-handler'
 
 const Reducer = (state, action) => {
   if(action.type === 'first'){
@@ -66,6 +70,47 @@ export default function Home({route, navigation}) {
     setRefreshing(false)
   }
 
+  const PinchableBox = props => {
+    const scale = new Animated.Value(1)
+    const onPinchEvent = Animated.event(
+      [
+        {
+          nativeEvent: { scale: scale }
+        }
+      ],
+      {
+        useNativeDriver: true
+      }
+    )
+    const onPinchStateChange = event => {
+      if (event.nativeEvent.oldState === State.ACTIVE) {
+        Animated.spring(scale, {
+          toValue: 1,
+          useNativeDriver: true
+        }).start()
+      }
+    }
+    const screen = Dimensions.get('window')
+
+    return (
+      <PinchGestureHandler
+        onGestureEvent={onPinchEvent}
+        onHandlerStateChange={onPinchStateChange}>
+        <Animated.Image
+          source={{ uri: props.imageUri }}
+          style={{
+            width: screen.width,
+            height: 500,
+            transform: [{ scale: scale }],
+            zIndex: 10,
+          }}
+          transition="opacity"
+          resizeMode='contain'
+        />
+      </PinchGestureHandler>
+    )
+  }
+
   const renderRow = ({item}) => {
 
     let lastTap = null;
@@ -85,11 +130,14 @@ export default function Home({route, navigation}) {
       <View style={styles.item}>
         <View style={styles.user}>
           <Image style={{width: 30, height: 30}} source={require('../../assets/dog.png')} />
-          <Text style={styles.itemText}>Clement</Text>
+          <Text style={styles.itemText}>{item.id}</Text>
         </View>
-        <TouchableWithoutFeedback onPress={() => handleDoubleTap(item.id)}>
-          <Image style={styles.itemImage} source={{uri: item.url}} />
-        </TouchableWithoutFeedback>
+        {/*<TouchableWithoutFeedback onPress={() => handleDoubleTap(item.id)}>*/}
+        {/*  /!*<Image*!/*/}
+        {/*  /!*  style={[styles.itemImage]}*!/*/}
+        {/*  /!*  source={{uri: item.url}} />*!/*/}
+        {/*</TouchableWithoutFeedback>*/}
+        <PinchableBox imageUri={item.url}/>
         <TouchableOpacity onPress={() => goLike(item.id)}>
           <View style={styles.likes}>
             <Image style={{width: 22, height: 22}} source={likeStatus}/>
@@ -130,10 +178,12 @@ export default function Home({route, navigation}) {
   );
 }
 
+const {width} = Dimensions.get("window");
+const SIZE = width;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: '100%'
   },
   user: {
     flexDirection: 'row',
@@ -150,8 +200,8 @@ const styles = StyleSheet.create({
     marginBottom: 20
   },
   itemImage: {
-    width: '100%',
-    height: 200,
+    width: SIZE,
+    height: SIZE,
     resizeMode: 'cover'
   },
   likes: {

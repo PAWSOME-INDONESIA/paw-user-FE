@@ -4,93 +4,56 @@ import {
   Text,
   View,
   Image,
-  TouchableOpacity, AsyncStorage, FlatList, TouchableWithoutFeedback, ActivityIndicator,
+  Dimensions,
+  TouchableOpacity, AsyncStorage, FlatList, ActivityIndicator,
 } from 'react-native';
+
+import Lightbox from 'react-native-lightbox';
+
 import EditProfile from "./EditProfile";
 import Pets from "./Pets";
-import {editUser, getUserPost} from "../../utils/API";
+import isEmpty from "react-native-web/dist/vendor/react-native/isEmpty";
+
+const WINDOW_WIDTH = Dimensions.get('window').width;
+const BASE_PADDING = 10;
 
 export default function Profile(props) {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalPet, setModalPet] = useState(false);
   const [userProfile, setUserProfile] = useState(props.userProfile);
-  const [posts, setPosts] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState('');
-  const [refreshing, setRefreshing] = useState(false);
-
-  useEffect(()=> {
-    loadPosts();
-  },[])
-
-  async function loadPosts(pageNum = page, shouldRefresh = false){
-
-    if(total && page > total) return;
-
-    const store = await AsyncStorage.getItem('@session').then(res => {return res})
-
-    let value = store;
-    value = value.replace(/^"|"$/g, '');
-
-    setLoading(true)
-
-    const response = await fetch(`https://paw-user-yej2q77qka-an.a.run.app/post/user-profile?userID=${value}&lastID=&limit=3`)
-
-    const data = await response.json()
-    const totalItems = response.headers.get('X-Total-Count')
-
-    setTotal(Math.floor(totalItems/1))
-    setPosts(shouldRefresh ? data.data.posts : [...posts, ...data.data.posts])
-    setPage(pageNum + 1)
-    setLoading(false)
-  };
 
   async function refreshList() {
-    setRefreshing(true)
-
-    await loadPosts(1, true);
-
-    setRefreshing(false)
+    props.setRefreshing(true)
+    props.load(1, true)
+    props.setRefreshing(false)
   }
 
   const renderRow = ({item}) => {
-    let lastTap = null;
-    const handleDoubleTap = (id) => {
-      const now = Date.now();
-      const DOUBLE_PRESS_DELAY = 300;
-      if (lastTap && (now - lastTap) < DOUBLE_PRESS_DELAY) {
-        // goLike(id);
-      } else {
-        lastTap = now;
-      }
+
+    const image = () => {
+      return(
+        <Image
+          style={[styles.square2, styles.squareFirst2]}
+          resizeMode="cover"
+          source={{ uri: item.imageUrl }}
+        />
+      )
     }
 
-    // const likeStatus = likes ? require('../../assets/paw-filled.png') : require('../../assets/paw-empty.png')
-
     return(
-      <View style={styles.item}>
-        {/*<View style={styles.user}>*/}
-        {/*  <Image style={{width: 30, height: 30}} source={require('../../assets/dog.png')} />*/}
-        {/*  <Text style={styles.itemText}>Clement</Text>*/}
-        {/*</View>*/}
-        {/*<TouchableWithoutFeedback onPress={() => handleDoubleTap(item.id)}>*/}
-          <Image style={styles.itemImage} source={{uri: item.imageUrl}} />
-        {/*</TouchableWithoutFeedback>*/}
-        {/*<TouchableOpacity onPress={() => goLike(item.id)}>*/}
-        {/*  <View style={styles.likes}>*/}
-        {/*    <Image style={{width: 22, height: 22}} source={likeStatus}/>*/}
-        {/*  </View>*/}
-        {/*</TouchableOpacity>*/}
-        {/*<Text style={styles.itemText}>100 likess</Text>*/}
-        {/*<Text style={styles.itemText}>{item.title}</Text>*/}
-      </View>
+      <Lightbox style={styles.col} renderContent={image} springConfig={{ overshootClamping: true }} swipeToDismiss={true}>
+        <Image
+          style={[styles.square, styles.squareFirst]}
+          resizeMode="cover"
+          source={{ uri: item.imageUrl }}
+        />
+      </Lightbox>
     )
   };
 
   const footer = () => {
     return(
-      loading ? (
+      props.loading ? (
         <View style={styles.loader}>
           <ActivityIndicator size="large" />
         </View> ) : null
@@ -99,6 +62,7 @@ export default function Profile(props) {
 
   const onEditProfile = (value) => {
     setUserProfile(value)
+    props.updateUserProfile(value)
     toggleModalEditProfile()
   };
 
@@ -110,28 +74,30 @@ export default function Profile(props) {
     setModalPet(!modalPet)
   };
 
+  const imgUrl = isEmpty(userProfile.imageUrl) ? require('../../assets/dog.png') : { uri: userProfile.imageUrl}
+
   return (
     <View style={styles.container}>
-      <View style={{marginTop: 30, alignItems: 'center', flexDirection: 'row'}}>
+      <View style={{marginTop: 25, alignItems: 'center', flexDirection: 'row'}}>
         <View style={styles.avatarContainer}>
-          <Image style={styles.avatar} source={{ uri: userProfile.imageUrl} || require('../../assets/dog.png')}/>
+          <Image style={styles.avatar} source={imgUrl}/>
         </View>
 
         <View style={styles.statsContainer}>
           <View style={styles.stat}>
-            <Text style={styles.statAmount}>999</Text>
+            <Text style={styles.statAmount}>{props.post.length}</Text>
             <Text style={styles.statTitle}>post</Text>
           </View>
           <View style={styles.stat}>
-            <Text style={styles.statAmount}>999</Text>
+            <Text style={styles.statAmount}>{props.totalFollowers}</Text>
             <Text style={styles.statTitle}>followers</Text>
           </View>
           <View style={styles.stat}>
-            <Text style={styles.statAmount}>999</Text>
+            <Text style={styles.statAmount}>{props.totalFollowings}</Text>
             <Text style={styles.statTitle}>following</Text>
           </View>
           <TouchableOpacity style={styles.stat} onPress={toggleModalPet}>
-            <Text style={styles.statAmount}>3</Text>
+            <Text style={styles.statAmount}>{props.totalPets}</Text>
             <Text style={styles.statTitle}>pets</Text>
           </TouchableOpacity>
         </View>
@@ -143,19 +109,22 @@ export default function Profile(props) {
       <TouchableOpacity onPress={toggleModalEditProfile} style={styles.editProfile}>
         <Text style={styles.editProfileText}>Edit Profile</Text>
       </TouchableOpacity>
+      <View style={{height: 475}}>
+        <FlatList
+          // style={{marginLeft: 5}}
+          data={props.post}
+          refreshing={props.refreshing}
+          onEndReached={() => props.load()}
+          onEndReachedThreshold={0.1}
+          keyExtractor={post => String(post.id)}
+          renderItem={item => renderRow(item)}
+          ListFooterComponent={footer}
+          onRefresh={refreshList}
+          numColumns={3}
+        />
+      </View>
       <Pets open={modalPet} close={()=> toggleModalPet}/>
       <EditProfile open={modalVisible} editProfile={(res) => onEditProfile(res)} close={()=> toggleModalEditProfile()} userProfile={userProfile}/>
-      <FlatList
-        data={posts}
-        refreshing={refreshing}
-        onEndReached={() => loadPosts()}
-        onEndReachedThreshold={0.1}
-        keyExtractor={post => String(post.id)}
-        renderItem={item => renderRow(item)}
-        ListFooterComponent={footer}
-        onRefresh={refreshList}
-        numColumns={3}
-      />
     </View>
   );
 }
@@ -214,6 +183,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginLeft: 20,
     marginRight: 20,
+    marginBottom: 15,
     borderRadius: 20,
     backgroundColor: 'black',
     justifyContent: 'center', //Centered vertically
@@ -264,5 +234,54 @@ const styles = StyleSheet.create({
   itemImage: {
     width: 120,
     height: 120
+  },
+  item: {
+    marginTop: 10,
+    height: 500
+  },
+  user: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 5,
+    alignItems: 'center',
+    marginTop: 5
+  },
+  loader: {
+    marginTop: 30,
+    alignItems: 'center'
+  },
+  likes: {
+    height: 35,
+    width: 35,
+    marginLeft: 10,
+    marginTop: 5,
+  },
+  itemText: {
+    fontSize: 12,
+    padding: 5,
+    bottom: 5
+  },
+  col: {
+    flexWrap: 'wrap',
+    alignItems: 'flex-start',
+    flexDirection:'row',
+  },
+  square: {
+    width: WINDOW_WIDTH - BASE_PADDING * 27.6,
+    height: WINDOW_WIDTH - BASE_PADDING * 30,
+    justifyContent: 'center',
+    alignSelf: 'center',
+  },
+  squareFirst: {
+    backgroundColor: 'black',
+  },
+  square2: {
+    width: 300,
+    height: 300,
+    justifyContent: 'center',
+    alignSelf: 'center',
+  },
+  squareFirst2: {
+    backgroundColor: 'black',
   }
 });

@@ -55,12 +55,16 @@ https://expo.github.io/vector-icons/
 https://medium.com/@andi.gu.ca/a-collapsing-navbar-with-tabs-in-react-native-e80790588830
 https://docs.expo.io/tutorial/sharing/
 https://www.flaticon.com/free-icon/pawprint_1076928
+https://www.npmjs.com/package/react-native-app-intro-slider
+https://github.com/oblador/react-native-lightbox/blob/master/Example/app.js
 
 
 ## TODO
 
 - [x] Login Page
 - [x] SignUp Page
-- [ ] Home Page
-- [ ] Navigation
-- [ ] Settings
+- [x] Home Page
+- [x] Navigation
+- [x] Settings
+- [x] Profile Page
+- [x] Map Page

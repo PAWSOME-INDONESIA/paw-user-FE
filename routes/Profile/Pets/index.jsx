@@ -1,13 +1,75 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
-  StyleSheet,
-  View,
-  Modal,
-  Text, Button
+  StyleSheet, View, Modal, Button, AsyncStorage, FlatList, Image,
+  Text, ActivityIndicator, TouchableOpacity, TextInput
 } from 'react-native';
-import TouchableOpacity from "react-native-web/src/exports/TouchableOpacity";
+import {getPet} from "../../../utils/API";
 
 export default function Pets(props) {
+  const [petList, setPetList] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [seed, setSeed] = useState(1);
+  const [error, setError] = useState(null);
+
+  // useEffect(() => {
+  //   fetchPets()
+  // }, [])
+
+  const fetchPets = async () => {
+    const store = await AsyncStorage.getItem('@session').then(res => {return res})
+
+    setLoading(true)
+    const fetchPets = await getPet(store, 'false')
+
+    setPetList(fetchPets)
+  }
+
+  const handleSearch = text => {
+    console.log(text, 'helo text')
+  };
+
+  const renderFooter = () => {
+    if (!loading) return null;
+
+    return (
+      <View
+        style={{
+          paddingVertical: 20,
+          borderTopWidth: 1,
+          borderColor: '#CED0CE'
+        }}
+      >
+        <ActivityIndicator animating size='large' />
+      </View>
+    );
+  };
+
+  const renderHeader = () => (
+    <View
+      style={{
+        backgroundColor: '#fff',
+        padding: 10,
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      <TextInput
+        autoCapitalize='none'
+        onChangeText={handleSearch}
+        style={{
+          borderRadius: 25,
+          borderColor: '#d3d3d3',
+          backgroundColor: '#ffffff',
+          width: 300,
+          height: 35,
+          borderWidth: 1,
+          paddingLeft: 15,
+        }}
+        placeholder="Search"
+      />
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -21,9 +83,38 @@ export default function Pets(props) {
         >
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
-              <Text>helo</Text>
-              <View>
-                <Button title={'Close'} onPress={props.close()} />
+              <Button title={'Close'} onPress={props.close()} />
+              <View
+                style={{
+                  flex: 1,
+                  paddingHorizontal: 0,
+                  paddingVertical: 20,
+                  marginTop: 40,
+                  width: '100%'
+                }}
+              >
+                <FlatList
+                  data={petList}
+                  keyExtractor={item => item.id}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity onPress={() => alert('Item pressed!')}>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          padding: 16,
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Image source={{uri: item.imageUrl}} style={{width: 50, height: 50, marginRight: 20}}/>
+                        <Text style={{ fontSize: 22 }}>
+                          {item.name} - {item.birthDate}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                  ListFooterComponent={renderFooter}
+                  ListHeaderComponent={renderHeader}
+                />
               </View>
             </View>
           </View>

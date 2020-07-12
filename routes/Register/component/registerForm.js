@@ -4,7 +4,8 @@ import {TextInput, StyleSheet, Text, View, TouchableOpacity, StatusBar} from "re
 
 import Spinner from "../../Spinner/index";
 
-import { AsyncStorage } from 'react-native';
+import {doRegister} from "../../../utils/API";
+import isEmpty from "react-native-web/dist/vendor/react-native/isEmpty";
 
 export default class RegisterForm extends Component {
     constructor(props) {
@@ -31,51 +32,27 @@ export default class RegisterForm extends Component {
         this.setState({
             loading: true
         })
-        let data = {
-            method: 'POST',
-            credentials: 'same-origin',
-            mode: 'same-origin',
-            body: JSON.stringify({
-                email: this.state.email,
-                password: this.state.password
-            }),
-            headers: {
-                'Accept':       'application/json',
-                'Content-Type': 'application/json',
-            }
-        }
-        let abc = fetch('https://demo1998209.mockable.io/clementBMG',{
-            method: 'GET',
-            // body: data
+
+
+      const param = JSON.stringify({
+        "email": this.state.email, //"jo@test.com"
+        "password": this.state.password //12345
+      })
+
+      doRegister(param).then(res => {
+        this.setState({
+          loading: false,
         })
-            .then(response => response.json())  // promise
-            .then(json => {
-                if(json.code === 'SUCCESS'){
-                    this.setState({
-                        loading: false,
-                        result: json.code
-                    })
 
-                    const _storeData = async () => {
-                        try {
-                            await AsyncStorage.setItem(
-                                '@session',
-                                'loggedIn!'
-                            );
-                        } catch (error) {
-                            // Error saving data
-                        }
-                    };
-
-                    this.props.onClick(_storeData());
-
-                } else {
-                    this.setState({
-                        loading: true,
-                        result: json.code
-                    })
-                }
-            })
+        if(!isEmpty(res)){
+          this.setState({
+            result: res
+          })
+          this.props.onClick()
+        } else {
+          alert('Please try again')
+        }
+      })
     }
 
     render() {
@@ -132,7 +109,7 @@ export default class RegisterForm extends Component {
                                 onChange={text => this.onChangeText(text.nativeEvent.text, 'passwordConfirm')}
                             />
                             <TouchableOpacity style={styles.buttonContainer}>
-                                <Text style={styles.buttonText} onPress={(e) => this.onSubmit()}>Login</Text>
+                                <Text style={styles.buttonText} onPress={(e) => this.onSubmit()}>Sign Up</Text>
                             </TouchableOpacity>
                             <Text style={styles.signUpText} onPress={(e) => this.props.navi.navigate('Login')}>Already Have an account? Log In</Text>
                         </View>
