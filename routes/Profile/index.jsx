@@ -11,6 +11,7 @@ import {
 import Lightbox from 'react-native-lightbox';
 
 import EditProfile from "./EditProfile";
+import Post from './Post';
 import Pets from "./Pets";
 import isEmpty from "react-native-web/dist/vendor/react-native/isEmpty";
 
@@ -21,6 +22,7 @@ export default function Profile(props) {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalPet, setModalPet] = useState(false);
   const [userProfile, setUserProfile] = useState(props.userProfile);
+  const [showPost, setShowPost] = useState(false);
 
   async function refreshList() {
     props.setRefreshing(true)
@@ -32,23 +34,40 @@ export default function Profile(props) {
 
     const image = () => {
       return(
-        <Image
-          style={[styles.square2, styles.squareFirst2]}
-          resizeMode="cover"
-          source={{ uri: item.imageUrl }}
-        />
+        <View>
+          <Image
+            style={[styles.square2, styles.squareFirst2]}
+            resizeMode="cover"
+            source={{ uri: item.imageUrl }}
+          />
+        </View>
       )
     }
 
+    const post = () => {
+      console.log('post clicked')
+      setShowPost(true)
+    }
+
     return(
-      <Lightbox style={styles.col} renderContent={image} springConfig={{ overshootClamping: true }} swipeToDismiss={true}>
+      <TouchableOpacity onPress={post}>
         <Image
           style={[styles.square, styles.squareFirst]}
           resizeMode="cover"
           source={{ uri: item.imageUrl }}
         />
-      </Lightbox>
+      </TouchableOpacity>
     )
+
+    // return(
+    //   <Lightbox style={styles.col} renderContent={image} springConfig={{ overshootClamping: true }} swipeToDismiss={true}>
+    //     <Image
+    //       style={[styles.square, styles.squareFirst]}
+    //       resizeMode="cover"
+    //       source={{ uri: item.imageUrl }}
+    //     />
+    //   </Lightbox>
+    // )
   };
 
   const footer = () => {
@@ -76,40 +95,49 @@ export default function Profile(props) {
 
   const imgUrl = isEmpty(userProfile.imageUrl) ? require('../../assets/dog.png') : { uri: userProfile.imageUrl}
 
+  if(showPost){
+    return (
+      <Post />
+    )
+  }
   return (
     <View style={styles.container}>
-      <View style={{marginTop: 25, alignItems: 'center', flexDirection: 'row'}}>
-        <View style={styles.avatarContainer}>
-          <Image style={styles.avatar} source={imgUrl}/>
-        </View>
+      <View style={{height: '40%'}}>
+        <View style={{marginTop: 25, alignItems: 'center', flexDirection: 'row'}}>
+          <View style={styles.avatarContainer}>
+            <Image style={styles.avatar} source={imgUrl}/>
+          </View>
 
-        <View style={styles.statsContainer}>
-          <View style={styles.stat}>
-            <Text style={styles.statAmount}>{props.post.length}</Text>
-            <Text style={styles.statTitle}>post</Text>
+          <View style={styles.statsContainer}>
+            <View style={styles.stat}>
+              <Text style={styles.statAmount}>{props.post.length}</Text>
+              <Text style={styles.statTitle}>post</Text>
+            </View>
+            <View style={styles.stat}>
+              <Text style={styles.statAmount}>{props.totalFollowers}</Text>
+              <Text style={styles.statTitle}>followers</Text>
+            </View>
+            <View style={styles.stat}>
+              <Text style={styles.statAmount}>{props.totalFollowings}</Text>
+              <Text style={styles.statTitle}>following</Text>
+            </View>
+            <TouchableOpacity style={styles.stat} onPress={toggleModalPet}>
+              <Text style={styles.statAmount}>{props.totalPets}</Text>
+              <Text style={styles.statTitle}>pets</Text>
+            </TouchableOpacity>
           </View>
-          <View style={styles.stat}>
-            <Text style={styles.statAmount}>{props.totalFollowers}</Text>
-            <Text style={styles.statTitle}>followers</Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={styles.statAmount}>{props.totalFollowings}</Text>
-            <Text style={styles.statTitle}>following</Text>
-          </View>
-          <TouchableOpacity style={styles.stat} onPress={toggleModalPet}>
-            <Text style={styles.statAmount}>{props.totalPets}</Text>
-            <Text style={styles.statTitle}>pets</Text>
-          </TouchableOpacity>
         </View>
+        {/*userName text*/}
+        <Text style={styles.userName}>{userProfile.username}</Text>
+        <Text style={styles.description}>{userProfile.bio}</Text>
+        {/*editProfile button*/}
+        <TouchableOpacity onPress={toggleModalEditProfile} style={styles.editProfile}>
+          <Text style={styles.editProfileText}>Edit Profile</Text>
+        </TouchableOpacity>
+        <Pets open={modalPet} close={()=> toggleModalPet} navigation={props.navigation}/>
+        <EditProfile open={modalVisible} editProfile={(res) => onEditProfile(res)} close={()=> toggleModalEditProfile()} userProfile={userProfile}/>
       </View>
-      {/*userName text*/}
-      <Text style={styles.userName}>{userProfile.username}</Text>
-      <Text style={styles.description}>{userProfile.bio}</Text>
-      {/*editProfile button*/}
-      <TouchableOpacity onPress={toggleModalEditProfile} style={styles.editProfile}>
-        <Text style={styles.editProfileText}>Edit Profile</Text>
-      </TouchableOpacity>
-      <View style={{height: 475}}>
+      <View style={{height: '60%'}}>
         <FlatList
           // style={{marginLeft: 5}}
           data={props.post}
@@ -123,8 +151,6 @@ export default function Profile(props) {
           numColumns={3}
         />
       </View>
-      <Pets open={modalPet} close={()=> toggleModalPet}/>
-      <EditProfile open={modalVisible} editProfile={(res) => onEditProfile(res)} close={()=> toggleModalEditProfile()} userProfile={userProfile}/>
     </View>
   );
 }

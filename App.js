@@ -16,7 +16,7 @@ import Register from './routes/Register';
 
 import IconCamera from "./components/Icons/IconCamera";
 
-import {getFollowers, doLogout, getPet, getFollowings} from "./utils/API";
+import {getFollowers, doLogout, getPet, getFollowings, editUser} from "./utils/API";
 import {normalizeUserData} from "./utils/normalizeUserProfile";
 
 function SettingsScreen(props) {
@@ -106,7 +106,7 @@ function MyTabs(props) {
   },[])
 
   const loadPosts = async (pageNum = page, shouldRefresh = false) => {
-    if(total && page > total) return;
+    if(lastID === null) return;
 
     setLoading(true)
 
@@ -129,7 +129,7 @@ function MyTabs(props) {
 
     if(res === null){
       setLoading(false)
-      setLastID('')
+      setLastID(null)
       setPosts([...posts])
       return
     }
@@ -153,7 +153,7 @@ function MyTabs(props) {
         lastID={lastID}
         page={page}
         updateUserProfile={value => setUserProfile(value)}
-        navigator={props.navigation.navigator}
+        navigation={props.navigation}
         totalPets={petCounter}
         totalFollowers={followersCounter}
         totalFollowings={followingsCounter}

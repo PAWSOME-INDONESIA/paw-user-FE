@@ -113,7 +113,7 @@ export default function EditProfile(props) {
         transparent={true}
         visible={props.open}
         onRequestClose={() => {
-          Alert.alert("Modal has been closed.");
+          alert("Modal has been closed.");
         }}
       >
         <View style={styles.centeredView}>

@@ -1,7 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import {
   StyleSheet, View, Modal, Button, AsyncStorage, FlatList, Image,
-  Text, ActivityIndicator, TouchableOpacity, TextInput
+  Text, ActivityIndicator, TouchableOpacity, TextInput, BackHandler,
+  AppState
 } from 'react-native';
 import {getPet} from "../../../utils/API";
 
@@ -12,9 +13,20 @@ export default function Pets(props) {
   const [seed, setSeed] = useState(1);
   const [error, setError] = useState(null);
 
-  // useEffect(() => {
-  //   fetchPets()
-  // }, [])
+  const handleBackButtonClick = () => {
+    props.navigation.goBack(null)
+    return true;
+  };
+
+  useEffect(() => {
+    fetchPets()
+    BackHandler.addEventListener('hardwareBackPress', handleBackButtonClick);
+
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButtonClick);
+    }
+
+  }, [])
 
   const fetchPets = async () => {
     const store = await AsyncStorage.getItem('@session').then(res => {return res})
@@ -77,9 +89,7 @@ export default function Pets(props) {
           animationType="slide"
           transparent={true}
           visible={props.open}
-          onRequestClose={() => {
-            Alert.alert("Modal has been closed.");
-          }}
+          onRequestClose={props.close()}
         >
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
