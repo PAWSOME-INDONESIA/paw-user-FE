@@ -57,6 +57,7 @@ https://docs.expo.io/tutorial/sharing/
 https://www.flaticon.com/free-icon/pawprint_1076928
 https://www.npmjs.com/package/react-native-app-intro-slider
 https://github.com/oblador/react-native-lightbox/blob/master/Example/app.js
+https://aboutreact.com/react-native-login-and-signup/
 
 
 ## TODO

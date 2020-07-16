@@ -21,7 +21,7 @@ export const doLogin = (body) => {
             if(result.success === true){
                 return result.data
             } else {
-                return {}
+                return 'failed'
             }
         })
         .catch(error => console.log('error', error));
@@ -40,7 +40,7 @@ export const doRegister = (body) => {
       if(result.success === true){
         return result.data.user
       } else {
-        return {}
+        return 'failed'
       }
     })
     .catch(error => console.log('error', error));
@@ -154,7 +154,7 @@ export const getFollowings = (id) => {
           return result.data.followings
         }
       } else {
-        return 'Error'
+        return 'No Followings'
       }
     })
     .catch(error => console.log('error', error));
@@ -183,6 +183,46 @@ export const getUserPost = (id, lastID) => {
     .catch(error => console.log('error', error));
 
   return userPost
+}
+export const deleteUserPost = (postId) => {
+  let value = postId;
+  value = value.replace(/^"|"$/g, '');
+
+  const deletePost  = fetch(userUrl + `/post/${value}`, {
+    method: 'DELETE',
+    headers: myHeaders,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return 'success'
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return deletePost
+}
+export const postUserPost = (body) => {
+  const uploadPost  = fetch(userUrl + '/post', {
+    method: 'POST',
+    headers: myHeaders,
+    body: body,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return result.data.post
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return uploadPost
 }
 
 // IMAGE

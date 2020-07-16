@@ -1,7 +1,14 @@
 import React, {useState} from 'react';
-import { StyleSheet, Text, TextInput, View, Modal, Image, AsyncStorage, ActivityIndicator, TouchableOpacity, Button } from 'react-native';
+import {
+  StyleSheet,
+  Text, TextInput,
+  View, Image, AsyncStorage,
+  ActivityIndicator, TouchableOpacity, Button, Keyboard,
+  KeyboardAvoidingView, SafeAreaView, TouchableWithoutFeedback, ScrollView,
+} from 'react-native';
 import * as ImagePicker from "expo-image-picker";
 import moment from "moment";
+import Modal from 'react-native-modal';
 
 import DatePicker from "react-native-datepicker";
 
@@ -9,19 +16,19 @@ import {editUser, uploadImage} from "../../../utils/API";
 import isEmpty from "react-native-web/dist/vendor/react-native/isEmpty";
 
 export default function EditProfile(props) {
-  const [date, setDate] = React.useState(moment(props.userProfile.birthDate).format('YYYY-MM-DD'));
-  const [userName, setUserName] = React.useState(props.userProfile.username);
-  const [phoneNumber, setPhoneNumber] = React.useState(props.userProfile.phoneNumber);
-  const [bio, setBio] = React.useState(props.userProfile.bio);
-  const [imageUrl, setImageUrl] = React.useState(props.userProfile.imageUrl);
-  const [selectedImage, setSelectedImage] = React.useState(null);
-  const [saving, setSaving] = React.useState(false);
+  const [date, setDate] = useState(moment(props.userProfile.birthDate).format('YYYY-MM-DD'));
+  const [userName, setUserName] = useState(props.userProfile.username);
+  const [phoneNumber, setPhoneNumber] = useState(props.userProfile.phoneNumber);
+  const [bio, setBio] = useState(props.userProfile.bio);
+  const [imageUrl, setImageUrl] = useState(props.userProfile.imageUrl);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   const onChangeDate = props => {
     setDate(props)
   }
 
-  const editProfile = value => {
+  const editProfile = () => {
     setSaving(true)
       const param = JSON.stringify({
         "username": userName,
@@ -31,13 +38,17 @@ export default function EditProfile(props) {
         "imageUrl": imageUrl
       })
 
-      AsyncStorage.getItem('@session').then(res => {
-        editUser(res, param).then(val => {
-          console.log(val, 'helo world')
-          setSaving(false)
-          props.editProfile(val)
-        })
-      })
+    console.log(param, 'edit success')
+
+    editUser(props.userProfile.id, param).then(res => {
+      if(res !== 'failed'){
+        setSaving(false)
+        props.editProfile(res)
+      } else {
+        setSaving(false)
+        alert('Failed to edit profile')
+      }
+    })
   }
 
   const closeImage = () => {
@@ -79,181 +90,149 @@ export default function EditProfile(props) {
 
     setSelectedImage({localUri: pickerResult.uri});
   };
-  const [mode, setMode] = useState('date');
-  const [show, setShow] = useState(false);
 
-  const onChange = (event, selectedDate) => {
-
-    console.log(selectedDate, 'helo rekt')
-
-    const currentDate = selectedDate || date;
-    setShow(Platform.OS === 'ios');
-    setDate(currentDate);
-  };
-
-  const showMode = currentMode => {
-    setShow(true);
-    setMode(currentMode);
-  };
-
-  const showDatepicker = () => {
-    showMode('date');
-  };
-
-  const showTimepicker = () => {
-    showMode('time');
-  };
-
-  const imgUrl = isEmpty(imageUrl) ? require('../../../assets/dog.png') : { uri: imageUrl}
+  const imgUrl = isEmpty(props.userProfile.imageUrl) ? {uri: 'https://icon-library.com/images/google-user-icon/google-user-icon-21.jpg'} : { uri: props.userProfile.imageUrl}
 
   return (
     <View style={styles.container}>
       <Modal
-        animationType="slide"
-        transparent={true}
-        visible={props.open}
-        onRequestClose={() => {
-          alert("Modal has been closed.");
-        }}
+        isVisible={props.open}
+        onSwipeComplete={props.close}
+        swipeThreshold={50}
+        swipeDirection={['down']}
       >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <View style={styles.navProfileRow}>
-              <View style={styles.leftContainer}>
-                <TouchableOpacity
-                  style={{ ...styles.cancelButton, backgroundColor: "red" }}
-                  onPress={() => {
-                    props.close();
-                  }}
-                >
-                  <Text style={styles.textStyleHeader}>Cancel</Text>
-                </TouchableOpacity>
-              </View>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : null}
+          style={{ flex: 1 }}
+        >
+          <ScrollView>
+          <SafeAreaView style={styles.container}>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                  <View style={styles.navProfileRow}>
+                    <View style={styles.leftContainer}>
+                      <TouchableOpacity
+                        style={{ ...styles.cancelButton, backgroundColor: "red" }}
+                        onPress={() => {
+                          props.close();
+                        }}
+                      >
+                        <Text style={styles.textStyleHeader}>Cancel</Text>
+                      </TouchableOpacity>
+                    </View>
 
-              <View style={styles.rightContainer}>
-                {saving ?
-                  <ActivityIndicator size="small" color="#00ff00" style={{ ...styles.saveButton, backgroundColor: "green" }} /> :
+                    <View style={styles.rightContainer}>
+                      {saving ?
+                        <ActivityIndicator size="small" color="#00ff00" style={{ ...styles.saveButton, backgroundColor: "green" }} /> :
+                        <TouchableOpacity
+                          title="save"
+                          style={{ ...styles.saveButton, backgroundColor: "green" }}
+                          onPress={() => editProfile()}
+                        >
+                          <Text style={styles.textStyleHeader}>Done</Text>
+                        </TouchableOpacity>
+                      }
+                    </View>
+
+                  </View>
+                  <Text style={styles.modalText}>Edit Profile</Text>
+                  {selectedImage !== null ? (
+                    <View style={styles.imageProfile}>
+                      <Image source={{ uri: selectedImage.localUri }} style={styles.imageProfile} />
+                    </View>
+                  ) : (<Image style={styles.imageProfile} source={imgUrl}/>)
+                  }
                   <TouchableOpacity
-                    title="save"
-                    style={{ ...styles.saveButton, backgroundColor: "green" }}
-                    onPress={() => editProfile()}
+                    style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
+                    onPress={selectedImage === null ? changeProfilePic : closeImage}
                   >
-                    <Text style={styles.textStyleHeader}>Done</Text>
+                    <Text style={styles.textStyle}>{selectedImage === null ? 'Change Profile Photo' : 'Remove'}</Text>
                   </TouchableOpacity>
-                }
+                  <View style={styles.editProfileForm}>
+
+                    <View style={styles.editProfileRow}>
+                      <Text style={styles.formText}>
+                        Username
+                      </Text>
+                      <TextInput
+                        style={styles.form}
+                        placeholder="e.g., Brown"
+                        defaultValue={props.userProfile.username || ''}
+                        onChangeText={text => setUserName(text)}
+                      />
+                    </View>
+
+                    <View style={styles.editProfileRow}>
+                      <Text style={styles.formText}>
+                        Phone Number
+                      </Text>
+                      <TextInput
+                        style={styles.form}
+                        placeholder="e.g., +62 823..."
+                        defaultValue={props.userProfile.phoneNumber || ''}
+                        onChangeText={text => setPhoneNumber(text)}
+                      />
+                    </View>
+
+                    <View style={styles.editProfileRow}>
+                      <Text style={styles.formText}>
+                        Bio
+                      </Text>
+                      <TextInput
+                        style={styles.form}
+                        placeholder="Tell them about your self"
+                        defaultValue={props.userProfile.bio || ''}
+                        onChangeText={text => setBio(text)}
+                      />
+                    </View>
+
+                    <View style={styles.editProfileRow}>
+                      <Text style={styles.formText}>
+                        Date Of Birth
+                      </Text>
+
+                      <DatePicker
+                        style={{width: 200}}
+                        mode="date"
+                        date={date}
+                        placeholder="Select date"
+                        format="YYYY-MM-DD"
+                        minDate="2012-05-01"
+                        maxDate="2050-05-01"
+                        confirmBtnText="Confirm"
+                        cancelBtnText="Cancel"
+                        customStyles={{
+                          dateIcon: {
+                            position: 'absolute',
+                            right: 0,
+                            top: 4,
+                            marginRight: 0
+                          },
+                          dateInput: {
+                            marginRight: 34,
+                            marginLeft: 30
+                          },
+                          btnTextCancel: {
+                            color: 'orange'
+                          },
+                          btnTextConfirm: {
+                            color: '#32CD32'
+                          },
+                          datePickerCon: {
+                            backgroundColor: '#666666'
+                          }
+                        }}
+                        onDateChange={(birthDate) => onChangeDate(birthDate)}
+                      />
+                    </View>
+                  </View>
+                </View>
               </View>
-
-            </View>
-            <Text style={styles.modalText}>Edit Profile</Text>
-            {selectedImage !== null ? (
-              <View style={styles.imageProfile}>
-                <Image source={{ uri: selectedImage.localUri }} style={styles.imageProfile} />
-              </View>
-            ) : (<Image style={styles.imageProfile} source={imgUrl}/>)
-            }
-            <TouchableOpacity
-              style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
-              onPress={selectedImage === null ? changeProfilePic : closeImage}
-            >
-              <Text style={styles.textStyle}>{selectedImage === null ? 'Change Profile Photo' : 'Remove'}</Text>
-            </TouchableOpacity>
-            <View style={styles.editProfileForm}>
-
-              <View style={styles.editProfileRow}>
-                <Text style={styles.formText}>
-                  Username
-                </Text>
-                <TextInput
-                  style={styles.form}
-                  placeholder="e.g., Brown"
-                  defaultValue={userName}
-                  onChangeText={text => setUserName(text)}
-                />
-              </View>
-
-              <View style={styles.editProfileRow}>
-                <Text style={styles.formText}>
-                  Phone Number
-                </Text>
-                <TextInput
-                  style={styles.form}
-                  placeholder="e.g., +62 823..."
-                  defaultValue={phoneNumber}
-                  onChangeText={text => setPhoneNumber(text)}
-                />
-              </View>
-
-              <View style={styles.editProfileRow}>
-                <Text style={styles.formText}>
-                  Bio
-                </Text>
-                <TextInput
-                  style={styles.form}
-                  placeholder="Tell them about your self"
-                  defaultValue={bio}
-                  onChangeText={text => setBio(text)}
-                />
-              </View>
-
-              <View style={styles.editProfileRow}>
-                <Text style={styles.formText}>
-                  Date Of Birth
-                </Text>
-
-                <DatePicker
-                  style={{width: 200}}
-                  mode="date"
-                  date={date}
-                  placeholder="Select date"
-                  format="YYYY-MM-DD"
-                  minDate="2012-05-01"
-                  maxDate="2050-05-01"
-                  confirmBtnText="Confirm"
-                  cancelBtnText="Cancel"
-                  customStyles={{
-                    dateIcon: {
-                      position: 'absolute',
-                      right: 0,
-                      top: 4,
-                      marginRight: 0
-                    },
-                    dateInput: {
-                      marginRight: 34,
-                      marginLeft: 30
-                    },
-                    btnTextCancel: {
-                      color: 'orange'
-                    },
-                    btnTextConfirm: {
-                      color: '#32CD32'
-                    },
-                    datePickerCon: {
-                      backgroundColor: '#666666'
-                    }
-                  }}
-                  onDateChange={(birthDate) => onChangeDate(birthDate)}
-                />
-              </View>
-            </View>
-            <View style={styles.datePicker}>
-              {/*<View>*/}
-              {/*  <Button onPress={showDatepicker} title="Show date picker!" />*/}
-              {/*</View>*/}
-
-              {/*{show && (*/}
-              {/*  <DateTimePicker*/}
-              {/*    testID="dateTimePicker"*/}
-              {/*    value={date}*/}
-              {/*    mode={mode}*/}
-              {/*    is24Hour={true}*/}
-              {/*    display="default"*/}
-              {/*    onChange={onChange}*/}
-              {/*    */}
-              {/*  />*/}
-              {/*)}*/}
-            </View>
-          </View>
-        </View>
+            </TouchableWithoutFeedback>
+          </SafeAreaView>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -262,7 +241,7 @@ export default function EditProfile(props) {
 const styles = StyleSheet.create({
   container : {
     flex: 1,
-    backgroundColor: 'white'
+    marginTop: '40%',
   },
   editProfileForm: {
     flexDirection: 'column',
@@ -300,8 +279,8 @@ const styles = StyleSheet.create({
     marginRight: 20,
     borderRadius: 20,
     backgroundColor: 'black',
-    justifyContent: 'center', //Centered vertically
-    alignItems: 'center', // Centered horizontally
+    justifyContent: 'center',
+    alignItems: 'center',
     height: 35
   },
   editProfileText: {
@@ -316,7 +295,7 @@ const styles = StyleSheet.create({
   modalView: {
     margin: 20,
     width: '100%',
-    height: '100%',
+    height: '90%',
     backgroundColor: "white",
     borderRadius: 20,
     padding: 35,

@@ -1,87 +1,147 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {
   StyleSheet,
   Text,
   View,
   Image,
   Dimensions,
-  TouchableOpacity, AsyncStorage, FlatList, ActivityIndicator,
+  Animated,
+  SafeAreaView, TouchableOpacity, FlatList, ActivityIndicator,
+  TouchableHighlight
 } from 'react-native';
 
-import Lightbox from 'react-native-lightbox';
+import {TabView, TabBar} from 'react-native-tab-view';
+
+import AsyncStorage from '@react-native-community/async-storage';
 
 import EditProfile from "./EditProfile";
 import Post from './Post';
 import Pets from "./Pets";
-import isEmpty from "react-native-web/dist/vendor/react-native/isEmpty";
 
+import {getFollowers, getFollowings, getUser, getPet, getUserPost} from "../../utils/API";
+
+const TabBarHeight = 48;
+const HeaderHeight = 250;
+const tab1ItemSize = (Dimensions.get('window').width - 30) / 2;
+const tab2ItemSize = (Dimensions.get('window').width - 40) / 3;
 const WINDOW_WIDTH = Dimensions.get('window').width;
 const BASE_PADDING = 10;
+
+class TabScene extends React.Component {
+  render = () => {
+    const windowHeight = Dimensions.get('window').height;
+    const {
+      numCols,
+      data,
+      renderItem,
+      onGetRef,
+      scrollY,
+      onScrollEndDrag,
+      onMomentumScrollEnd,
+      onMomentumScrollBegin,
+      fetchMore,
+    } = this.props;
+
+    return (
+      <Animated.FlatList
+        scrollToOverflowEnabled={true}
+        numColumns={numCols}
+        ref={onGetRef}
+        scrollEventThrottle={16}
+        onScroll={Animated.event(
+          [{nativeEvent: {contentOffset: {y: scrollY}}}],
+          {useNativeDriver: true},
+        )}
+        onMomentumScrollBegin={onMomentumScrollBegin}
+        onScrollEndDrag={onScrollEndDrag}
+        onMomentumScrollEnd={onMomentumScrollEnd}
+        ItemSeparatorComponent={() => <View style={{height: 10}} />}
+        ListHeaderComponent={() => <View style={{height: 10}} />}
+        contentContainerStyle={{
+          paddingTop: HeaderHeight + TabBarHeight,
+          paddingHorizontal: 10,
+          minHeight: windowHeight - TabBarHeight,
+        }}
+        showsHorizontalScrollIndicator={false}
+        data={data}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+        keyExtractor={(item, index) => index.toString()}
+        onEndReached={fetchMore}
+        onEndReachedThreshold={0.1}
+      />
+    );
+
+    return null
+  };
+}
 
 export default function Profile(props) {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalPet, setModalPet] = useState(false);
-  const [userProfile, setUserProfile] = useState(props.userProfile);
-  const [showPost, setShowPost] = useState(false);
+  const [modalPost, setModalPost] = useState(false);
+  const [userProfile, setUserProfile] = useState({});
+  const [followers, setFollowers] = useState([]);
+  const [followings, setFollowings] = useState([]);
+  const [pet, setPet] = useState([]);
+  const [userPost, setUserPost] = useState([]);
+  const [userPostDetail, setUserPostDetail] = useState({});
+  const [tabIndex, setIndex] = useState(0);
+  const [routes] = useState([
+    {key: 'tab1', title: 'Posts'},
+    {key: 'tab2', title: 'Pets'},
+  ]);
+  const scrollY = useRef(new Animated.Value(0)).current;
+  let listRefArr = useRef([]);
+  let listOffset = useRef({});
+  let isListGliding = useRef(false);
+  const [loading, setLoading] = useState(false);
 
-  async function refreshList() {
-    props.setRefreshing(true)
-    props.load(1, true)
-    props.setRefreshing(false)
-  }
-
-  const renderRow = ({item}) => {
-
-    const image = () => {
-      return(
-        <View>
-          <Image
-            style={[styles.square2, styles.squareFirst2]}
-            resizeMode="cover"
-            source={{ uri: item.imageUrl }}
-          />
-        </View>
-      )
+  useEffect(() => {
+    console.log(loading, 'helo loading')
+    if(props.route.params && props.route.params.loadPage){
+      setLoading(true)
+      setUserPost([props.route.params.userPost, ...userPost])
     }
+  }, [props.route.params])
 
-    const post = () => {
-      console.log('post clicked')
-      setShowPost(true)
-    }
+  useEffect(() => {
+    setLoading(false)
+  }, [userPost])
 
-    return(
-      <TouchableOpacity onPress={post}>
-        <Image
-          style={[styles.square, styles.squareFirst]}
-          resizeMode="cover"
-          source={{ uri: item.imageUrl }}
-        />
-      </TouchableOpacity>
-    )
+  useEffect(() => {
+    scrollY.addListener(({value}) => {
+      const curRoute = routes[tabIndex].key;
+      listOffset.current[curRoute] = value;
+    });
+    return () => {
+      scrollY.removeAllListeners();
+    };
+  }, [routes, tabIndex]);
 
-    // return(
-    //   <Lightbox style={styles.col} renderContent={image} springConfig={{ overshootClamping: true }} swipeToDismiss={true}>
-    //     <Image
-    //       style={[styles.square, styles.squareFirst]}
-    //       resizeMode="cover"
-    //       source={{ uri: item.imageUrl }}
-    //     />
-    //   </Lightbox>
-    // )
-  };
+  useEffect(() => {
+    AsyncStorage.getItem('@session').then(res => {
+      getUser(res).then(usr => {
+        setUserProfile(usr)
+      })
+      getFollowers(res).then(followers => {
+        setFollowers(followers)
+      })
+      getFollowings(res).then(followings => {
+        setFollowings(followings)
+      })
+      getPet(res, 'false').then(pet => {
+        setPet(pet)
+      })
 
-  const footer = () => {
-    return(
-      props.loading ? (
-        <View style={styles.loader}>
-          <ActivityIndicator size="large" />
-        </View> ) : null
-    )
-  };
+      getUserPost(res, '').then(post => {
+        setUserPost(post)
+      })
+    })
+  }, [])
 
   const onEditProfile = (value) => {
     setUserProfile(value)
-    props.updateUserProfile(value)
     toggleModalEditProfile()
   };
 
@@ -93,65 +153,276 @@ export default function Profile(props) {
     setModalPet(!modalPet)
   };
 
-  const imgUrl = isEmpty(userProfile.imageUrl) ? require('../../assets/dog.png') : { uri: userProfile.imageUrl}
+  const togglePostDetail = () => {
+    setModalPost(!modalPost)
+  };
 
-  if(showPost){
-    return (
-      <Post />
-    )
+  const fetchMore = () => {
+    AsyncStorage.getItem('@session').then(res => {
+      userPost[userPost.length - 1].id;
+      getUserPost(res, userPost[userPost.length - 1].id).then(post => {
+        if(post === null){
+          return
+        } else {
+          setUserPost([...userPost, ...post])
+        }
+      })
+    })
   }
-  return (
-    <View style={styles.container}>
-      <View style={{height: '40%'}}>
-        <View style={{marginTop: 25, alignItems: 'center', flexDirection: 'row'}}>
+
+  const syncScrollOffset = () => {
+    const curRouteKey = routes[tabIndex].key;
+    listRefArr.current.forEach((item) => {
+      if (item.key !== curRouteKey) {
+        if (scrollY._value < HeaderHeight && scrollY._value >= 0) {
+          if (item.value) {
+            if(item.value._component){
+              item.value._component.scrollToOffset({
+                offset: scrollY._value,
+                animated: false,
+              });
+            }
+            listOffset.current[item.key] = scrollY._value;
+          }
+        } else if (scrollY._value >= HeaderHeight) {
+          if (
+            listOffset.current[item.key] < HeaderHeight ||
+            listOffset.current[item.key] == null
+          ) {
+            if (item.value) {
+              if(item.value._component){
+                item.value._component.scrollToOffset({
+                  offset: HeaderHeight,
+                  animated: false,
+                });
+              }
+              listOffset.current[item.key] = HeaderHeight;
+            }
+          }
+        }
+      }
+    });
+  };
+
+  const onMomentumScrollBegin = () => {
+    isListGliding.current = true;
+  };
+
+  const onMomentumScrollEnd = () => {
+    isListGliding.current = false;
+    syncScrollOffset();
+  };
+
+  const onScrollEndDrag = () => {
+    syncScrollOffset();
+  };
+
+  const deletePost = (id) => {
+    const filteredItems = userPost.filter(item => item.id !== id)
+    setUserPost(filteredItems)
+  }
+
+  const renderHeader = () => {
+    const y = scrollY.interpolate({
+      inputRange: [0, HeaderHeight],
+      outputRange: [0, -HeaderHeight],
+      extrapolateRight: 'clamp',
+    });
+    return (
+      <Animated.View style={[styles.header, {transform: [{translateY: y}]}]}>
+        <View style={{ alignItems: 'center', flexDirection: 'row', marginTop: 30}}>
           <View style={styles.avatarContainer}>
-            <Image style={styles.avatar} source={imgUrl}/>
+            <Image style={styles.avatar} source={{uri: userProfile.imageUrl}}/>
           </View>
 
           <View style={styles.statsContainer}>
             <View style={styles.stat}>
-              <Text style={styles.statAmount}>{props.post.length}</Text>
+              <Text style={styles.statAmount}>12</Text>
               <Text style={styles.statTitle}>post</Text>
             </View>
             <View style={styles.stat}>
-              <Text style={styles.statAmount}>{props.totalFollowers}</Text>
+              <Text style={styles.statAmount}>{followers.length}</Text>
               <Text style={styles.statTitle}>followers</Text>
             </View>
             <View style={styles.stat}>
-              <Text style={styles.statAmount}>{props.totalFollowings}</Text>
+              <Text style={styles.statAmount}>{followings.length}</Text>
               <Text style={styles.statTitle}>following</Text>
             </View>
             <TouchableOpacity style={styles.stat} onPress={toggleModalPet}>
-              <Text style={styles.statAmount}>{props.totalPets}</Text>
+              <Text style={styles.statAmount}>{pet.length}</Text>
               <Text style={styles.statTitle}>pets</Text>
             </TouchableOpacity>
           </View>
         </View>
-        {/*userName text*/}
-        <Text style={styles.userName}>{userProfile.username}</Text>
-        <Text style={styles.description}>{userProfile.bio}</Text>
-        {/*editProfile button*/}
-        <TouchableOpacity onPress={toggleModalEditProfile} style={styles.editProfile}>
-          <Text style={styles.editProfileText}>Edit Profile</Text>
-        </TouchableOpacity>
-        <Pets open={modalPet} close={()=> toggleModalPet} navigation={props.navigation}/>
-        <EditProfile open={modalVisible} editProfile={(res) => onEditProfile(res)} close={()=> toggleModalEditProfile()} userProfile={userProfile}/>
-      </View>
-      <View style={{height: '60%'}}>
-        <FlatList
-          // style={{marginLeft: 5}}
-          data={props.post}
-          refreshing={props.refreshing}
-          onEndReached={() => props.load()}
-          onEndReachedThreshold={0.1}
-          keyExtractor={post => String(post.id)}
-          renderItem={item => renderRow(item)}
-          ListFooterComponent={footer}
-          onRefresh={refreshList}
-          numColumns={3}
+        <View style={{height: '20%', width: '100%'}}>
+
+          {/*userName text*/}
+          <Text style={styles.userName}>{userProfile.username}</Text>
+          <Text style={styles.description}>{userProfile.bio}</Text>
+
+          {/*editProfile button*/}
+          <TouchableOpacity onPress={toggleModalEditProfile} style={styles.editProfile}>
+            <Text style={styles.editProfileText}>Edit Profile</Text>
+          </TouchableOpacity>
+
+          {/*<Pets open={modalPet} close={()=> toggleModalPet} navigation={props.navigation}/>*/}
+          <EditProfile open={modalVisible} editProfile={(res) => onEditProfile(res)} close={()=> toggleModalEditProfile()} userProfile={userProfile}/>
+          <Post visible={modalPost} onClose={togglePostDetail} post={userPostDetail} deletePost={id => deletePost(id)}/>
+        </View>
+      </Animated.View>
+    );
+  };
+
+  const renderUserPet = ({item, index}) => {
+    return (
+      <View>
+        <Image
+          source={{uri: item.imageUrl}}
+          style={{
+            borderRadius: 16,
+            marginLeft: index % 2 === 0 ? 0 : 10,
+            width: tab1ItemSize,
+            height: tab1ItemSize,
+            backgroundColor: '#aaa',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
         />
       </View>
-    </View>
+    );
+  };
+
+  const renderUserPost = ({item, index}) => {
+    const longPress =()=> {
+      togglePostDetail()
+      setUserPostDetail(item)
+    }
+    return (
+      <View>
+        <TouchableOpacity onLongPress={longPress}>
+          <Image
+            source={{uri: item.imageUrl}}
+            style={{
+              marginLeft: index % 3 === 0 ? 0 : 10,
+              borderRadius: 16,
+              width: tab2ItemSize,
+              height: tab2ItemSize,
+              backgroundColor: '#aaa',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderLabel = ({route, focused}) => {
+    return (
+      <Text style={[styles.label, {opacity: focused ? 1 : 0.5}]}>
+        {route.title}
+      </Text>
+    );
+  };
+
+  const renderScene = ({route}) => {
+    const focused = route.key === routes[tabIndex].key;
+    let numCols;
+    let data;
+    let renderItem;
+    switch (route.key) {
+      case 'tab1':
+        numCols = 3;
+        data = userPost;
+        renderItem = renderUserPost;
+        break;
+      case 'tab2':
+        numCols = 2;
+        data = pet;
+        renderItem = renderUserPet ;
+        break;
+      default:
+        return null;
+    }
+    return (
+      <TabScene
+        numCols={numCols}
+        data={data}
+        renderItem={renderItem}
+        scrollY={scrollY}
+        onMomentumScrollBegin={onMomentumScrollBegin}
+        onScrollEndDrag={onScrollEndDrag}
+        onMomentumScrollEnd={onMomentumScrollEnd}
+        fetchMore={fetchMore}
+        onGetRef={(ref) => {
+          if (ref) {
+            const found = listRefArr.current.find((e) => e.key === route.key);
+            if (!found) {
+              listRefArr.current.push({
+                key: route.key,
+                value: ref,
+              });
+            }
+          }
+        }}
+      />
+    );
+  };
+
+  const renderTabBar = (props) => {
+    const y = scrollY.interpolate({
+      inputRange: [0, HeaderHeight],
+      outputRange: [HeaderHeight, 0],
+      extrapolateRight: 'clamp',
+    });
+    return (
+      <Animated.View
+        style={{
+          top: 0,
+          zIndex: 1,
+          position: 'absolute',
+          transform: [{translateY: y}],
+          width: '100%',
+        }}>
+        <TabBar
+          {...props}
+          onTabPress={({route, preventDefault}) => {
+            if (isListGliding.current) {
+              preventDefault();
+            }
+          }}
+          style={styles.tab}
+          renderLabel={renderLabel}
+          indicatorStyle={styles.indicator}
+        />
+      </Animated.View>
+    );
+  };
+
+  const renderTabView = () => {
+    return (
+      <TabView
+        onIndexChange={(index) => setIndex(index)}
+        navigationState={{index: tabIndex, routes}}
+        renderScene={renderScene}
+        renderTabBar={renderTabBar}
+        initialLayout={{
+          height: 0,
+          width: Dimensions.get('window').width,
+        }}
+      />
+    );
+  };
+
+  return (
+    <SafeAreaView style={{flex: 1}}>
+      {loading ? <ActivityIndicator color="#0000ff" style={{top: '50%', }} size="large"/> : (
+        <View style={{flex: 1}}>
+          {renderTabView()}
+          {renderHeader()}
+        </View>
+      )}
+    </SafeAreaView>
   );
 }
 
@@ -265,27 +536,9 @@ const styles = StyleSheet.create({
     marginTop: 10,
     height: 500
   },
-  user: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 5,
-    alignItems: 'center',
-    marginTop: 5
-  },
   loader: {
     marginTop: 30,
     alignItems: 'center'
-  },
-  likes: {
-    height: 35,
-    width: 35,
-    marginLeft: 10,
-    marginTop: 5,
-  },
-  itemText: {
-    fontSize: 12,
-    padding: 5,
-    bottom: 5
   },
   col: {
     flexWrap: 'wrap',
@@ -309,5 +562,17 @@ const styles = StyleSheet.create({
   },
   squareFirst2: {
     backgroundColor: 'black',
-  }
+  },
+  header: {
+    top: 0,
+    height: 250,
+    width: '100%',
+    backgroundColor: 'white',
+    alignItems: 'center',
+    // justifyContent: 'center',
+    position: 'absolute',
+  },
+  label: {fontSize: 16, color: '#222'},
+  tab: {elevation: 0, shadowOpacity: 0, backgroundColor: 'white'},
+  indicator: {backgroundColor: '#222'},
 });
