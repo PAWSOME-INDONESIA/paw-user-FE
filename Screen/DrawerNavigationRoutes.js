@@ -9,6 +9,7 @@ import { createDrawerNavigator } from 'react-navigation-drawer';
 import HomeScreen from './drawerScreens/HomeScreen';
 import SettingsScreen from './drawerScreens/SettingsScreen';
 import PetScreen from "./drawerScreens/PetScreen";
+import PetEncyclopediaScreen from "./drawerScreens/PetEncyclopediaScreen";
 
 //Import Drawer
 import CustomSidebarMenu from './Components/CustomSidebarMenu';
@@ -56,6 +57,20 @@ const ThirdActivity_StackNavigator = createStackNavigator({
   },
 });
 
+const FourthActivity_StackNavigator = createStackNavigator({
+  First: {
+    screen: PetEncyclopediaScreen,
+    navigationOptions: ({ navigation }) => ({
+      title: 'Pet Encyclopedia',
+      headerLeft: () => <NavigationDrawerHeader navigationProps={navigation} />,
+      headerStyle: {
+        backgroundColor: '#307ecc',
+      },
+      headerTintColor: '#fff',
+    }),
+  },
+});
+
 const DrawerNavigatorRoutes = createDrawerNavigator(
   {
     HomeScreen: {
@@ -74,6 +89,12 @@ const DrawerNavigatorRoutes = createDrawerNavigator(
       screen: ThirdActivity_StackNavigator,
       navigationOptions: {
         drawerLabel: 'Pet Screen',
+      },
+    },
+    PetEncyclopediaScreen: {
+      screen: FourthActivity_StackNavigator,
+      navigationOptions: {
+        drawerLabel: 'Pet Encyclopedia',
       },
     },
   },

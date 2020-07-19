@@ -19,6 +19,8 @@ import Post from './Post';
 import Pets from "./Pets";
 
 import {getFollowers, getFollowings, getUser, getPet, getUserPost} from "../../utils/API";
+import Followers from "./Followers";
+import {translate} from '../../utils/i18n'
 
 const TabBarHeight = 48;
 const HeaderHeight = 250;
@@ -80,6 +82,7 @@ export default function Profile(props) {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalPet, setModalPet] = useState(false);
   const [modalPost, setModalPost] = useState(false);
+  const [modalFollowers, setModalFollowers] = useState(false);
   const [userProfile, setUserProfile] = useState({});
   const [followers, setFollowers] = useState([]);
   const [followings, setFollowings] = useState([]);
@@ -98,16 +101,25 @@ export default function Profile(props) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    console.log(loading, 'helo loading')
-    if(props.route.params && props.route.params.loadPage){
+    if(props.route.params && props.route.params.loadPage && props.route.params.userPost){
       setLoading(true)
+      setIndex(0)
       setUserPost([props.route.params.userPost, ...userPost])
+    }
+    if(props.route.params && props.route.params.loadPage && props.route.params.userPet){
+      setLoading(true)
+      setIndex(1)
+      setPet([...pet, props.route.params.userPet])
     }
   }, [props.route.params])
 
   useEffect(() => {
     setLoading(false)
   }, [userPost])
+
+  useEffect(() => {
+    setLoading(false)
+  }, [pet])
 
   useEffect(() => {
     scrollY.addListener(({value}) => {
@@ -151,6 +163,10 @@ export default function Profile(props) {
 
   const toggleModalPet = () => {
     setModalPet(!modalPet)
+  };
+
+  const toggleModalFollowers = () => {
+    setModalFollowers(!modalFollowers)
   };
 
   const togglePostDetail = () => {
@@ -240,10 +256,10 @@ export default function Profile(props) {
               <Text style={styles.statAmount}>12</Text>
               <Text style={styles.statTitle}>post</Text>
             </View>
-            <View style={styles.stat}>
+            <TouchableOpacity style={styles.stat} onPress={toggleModalFollowers}>
               <Text style={styles.statAmount}>{followers.length}</Text>
               <Text style={styles.statTitle}>followers</Text>
-            </View>
+            </TouchableOpacity>
             <View style={styles.stat}>
               <Text style={styles.statAmount}>{followings.length}</Text>
               <Text style={styles.statTitle}>following</Text>
@@ -262,12 +278,13 @@ export default function Profile(props) {
 
           {/*editProfile button*/}
           <TouchableOpacity onPress={toggleModalEditProfile} style={styles.editProfile}>
-            <Text style={styles.editProfileText}>Edit Profile</Text>
+            <Text style={styles.editProfileText}>{translate(global.userLang, 'editProfile')}</Text>
           </TouchableOpacity>
 
+          {/*<Followers open={modalFollowers} close={() => toggleModalFollowers}/>*/}
           {/*<Pets open={modalPet} close={()=> toggleModalPet} navigation={props.navigation}/>*/}
           <EditProfile open={modalVisible} editProfile={(res) => onEditProfile(res)} close={()=> toggleModalEditProfile()} userProfile={userProfile}/>
-          <Post visible={modalPost} onClose={togglePostDetail} post={userPostDetail} deletePost={id => deletePost(id)}/>
+          <Post visible={modalPost} onClose={togglePostDetail} post={userPostDetail} deletePost={id => deletePost(id)} userProfile={userProfile}/>
         </View>
       </Animated.View>
     );
@@ -288,6 +305,9 @@ export default function Profile(props) {
             alignItems: 'center',
           }}
         />
+        <Text style={{textAlign: 'center', fontWeight: 'bold'}}>
+          {item.name}
+        </Text>
       </View>
     );
   };
@@ -299,7 +319,7 @@ export default function Profile(props) {
     }
     return (
       <View>
-        <TouchableOpacity onLongPress={longPress}>
+        <TouchableOpacity onPress={longPress}>
           <Image
             source={{uri: item.imageUrl}}
             style={{

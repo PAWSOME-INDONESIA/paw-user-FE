@@ -22,12 +22,17 @@ const CustomSidebarMenu = props => {
       screenToNavigate: 'PetScreen',
     },
     {
+      navOptionName: 'Pet Encyclopedia',
+      screenToNavigate: 'PetEncyclopediaScreen',
+    },
+    {
       navOptionName: 'Logout',
       screenToNavigate: 'logout',
     },
   ];
 
   const handleClick = (index, screenToNavigate) => {
+    console.log(screenToNavigate, 'helo screen')
     if (screenToNavigate == 'logout') {
       props.navigation.toggleDrawer();
       Alert.alert(

@@ -33,7 +33,6 @@ export default function Pets(props) {
 
     setLoading(true)
     const fetchPets = await getPet(store, 'false')
-
     setPetList(fetchPets)
   }
 

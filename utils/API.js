@@ -184,6 +184,27 @@ export const getUserPost = (id, lastID) => {
 
   return userPost
 }
+export const getUserFeed = (id, lastID) => {
+  let value = id;
+  value = value.replace(/^"|"$/g, '');
+
+  const userFeed  = fetch(userUrl + `/post/following?userID=${value}&lastID=${lastID}&limit=5`, {
+    method: 'GET',
+    headers: myHeaders,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return result.data.postResponses
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return userFeed
+}
 export const deleteUserPost = (postId) => {
   let value = postId;
   value = value.replace(/^"|"$/g, '');
@@ -224,6 +245,27 @@ export const postUserPost = (body) => {
 
   return uploadPost
 }
+export const getPostLikeCounter = (id) => {
+  let value = id;
+  value = value.replace(/^"|"$/g, '');
+
+  const postLikeCounter  = fetch(userUrl + `/like/find-by-postID?postID=${value}`, {
+    method: 'GET',
+    headers: myHeaders,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return result.data
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return postLikeCounter
+}
 
 // IMAGE
 export const uploadImage = (image) => {
@@ -260,12 +302,34 @@ export const getPet = (id, wLocation) => {
     .then(response => response.json())
     .then(result => {
       if(result.success === true){
+        if(result.data.pets === null){
+          return []
+        }
         return result.data.pets
       } else {
-        return alert('error fetching pets, please try again')
+        return 'failed'
       }
     })
     .catch(error => console.log('error', error));
 
   return userPet
+}
+export const postPet = (body) => {
+  const uploadPet  = fetch(userUrl + '/pet', {
+    method: 'POST',
+    headers: myHeaders,
+    body: body,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return result.data.pet
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return uploadPet
 }

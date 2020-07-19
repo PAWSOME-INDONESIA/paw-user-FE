@@ -8,11 +8,12 @@ import {
   Image,
   ActivityIndicator,
   TouchableOpacity,
-  TouchableWithoutFeedback,
-  Dimensions
+  Dimensions, ImageBackground
 } from 'react-native';
 
 import { PinchGestureHandler, State } from 'react-native-gesture-handler'
+import AsyncStorage from "@react-native-community/async-storage";
+import isEmpty from "lodash/isEmpty";
 
 const Reducer = (state, action) => {
   if(action.type === 'first'){
@@ -28,7 +29,7 @@ const Reducer = (state, action) => {
   return state
 }
 
-export default function Home({route, navigation}) {
+export default function Home(props) {
 
   const [feed, setFeed] = useState([]);
   const [page, setPage] = useState(1);
@@ -36,38 +37,79 @@ export default function Home({route, navigation}) {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [likes, setLikes] = useState(false);
+  const [lastId, setLastId] = useState('');
+  const [lastPage, setLastPage] = useState(false);
   const [state, dispatch] = useReducer(Reducer, {
     first: {}
   })
-
-  // console.log(route.params,'helo params')
 
   useEffect(() => {
     loadPage();
   }, [])
 
-  async function loadPage(pageNum = page, shouldRefresh = false){
+  async function loadPage(pageNum = page, shouldRefresh = false, firstFetch = false){
     if(total && page > total) return;
 
-    setLoading(true)
+    if(lastPage && !shouldRefresh){
+      return null
+    }
 
-    const response = await fetch(`https://jsonplaceholder.typicode.com/photos?_limit=10&_page=${pageNum}`)
+    setLoading(true)
+    const token = await AsyncStorage.getItem('@session').then(res =>{return res})
+
+    const response = await fetch(`https://paw-user-yej2q77qka-an.a.run.app/post/following?userID=${token}&lastID=${lastId}&limit=2`, {
+      method: 'get',
+      headers: new Headers({
+        'Content-Type': 'application/x-www-form-urlencoded'
+      })})
 
     const data = await response.json()
     const totalItems = response.headers.get('X-Total-Count')
+    const result = data.data.postResponses || {}
 
-    setTotal(Math.floor(totalItems/5))
-    setFeed(shouldRefresh ? data : [...feed, ...data])
-    setPage(pageNum + 1)
-    setLoading(false)
+    if(isEmpty(result)){
+      setLoading(false)
+      setLastPage(true)
+      setLastId('')
+      return null
+    }
+
+    if(firstFetch){
+      setLoading(false)
+      setLastPage(false)
+      setLastId(result[result.length - 1].post.id)
+      setTotal(Math.floor(totalItems/1))
+      setFeed(result)
+      setPage(1)
+      return null
+    } else {
+      setLastId(result[result.length - 1].post.id)
+      setTotal(Math.floor(totalItems/1))
+      setFeed(shouldRefresh ? data : [...feed, ...result])
+      setPage(pageNum + 1)
+      setLoading(false)
+      setLastPage(false)
+    }
   };
 
   async function refreshList() {
+    setLastId('')
     setRefreshing(true)
 
-    await loadPage(1, true);
+    await loadPage(1, true, true);
 
     setRefreshing(false)
+  }
+
+  if(isEmpty(feed)){
+    return(
+      <ImageBackground source={{uri: 'https://wallpapercave.com/wp/wp3898298.png'}}
+                         style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <Text style={{fontWeight: '600', fontSize: 24, color: 'black', top: -200}}>
+          No Home Feed, Follow Someone
+        </Text>
+      </ImageBackground>
+    )
   }
 
   const PinchableBox = props => {
@@ -97,7 +139,7 @@ export default function Home({route, navigation}) {
         onGestureEvent={onPinchEvent}
         onHandlerStateChange={onPinchStateChange}>
         <Animated.Image
-          source={{ uri: props.imageUri }}
+          source={{ uri: props.imageUri|| 'https://www.alwaysayurveda.com/wp-content/uploads/2015/07/image-not-available.jpg' }}
           style={{
             width: screen.width,
             height: 500,
@@ -129,22 +171,17 @@ export default function Home({route, navigation}) {
     return(
       <View style={styles.item}>
         <View style={styles.user}>
-          <Image style={{width: 30, height: 30}} source={require('../../assets/dog.png')} />
-          <Text style={styles.itemText}>{item.id}</Text>
+          <Image style={{width: 30, height: 30, borderRadius: 50, left: 5}} source={{uri: item.user.imageUrl}} />
+          <Text style={styles.itemText}>{item.user.username}</Text>
         </View>
-        {/*<TouchableWithoutFeedback onPress={() => handleDoubleTap(item.id)}>*/}
-        {/*  /!*<Image*!/*/}
-        {/*  /!*  style={[styles.itemImage]}*!/*/}
-        {/*  /!*  source={{uri: item.url}} />*!/*/}
-        {/*</TouchableWithoutFeedback>*/}
-        <PinchableBox imageUri={item.url}/>
+        <PinchableBox imageUri={item.post.imageUrl}/>
         <TouchableOpacity onPress={() => goLike(item.id)}>
           <View style={styles.likes}>
             <Image style={{width: 22, height: 22}} source={likeStatus}/>
           </View>
         </TouchableOpacity>
         <Text style={styles.itemText}>100 likess</Text>
-        <Text style={styles.itemText}>{item.title}</Text>
+        <Text style={styles.itemText}>{item.post.caption}</Text>
       </View>
     )
   };
@@ -169,7 +206,7 @@ export default function Home({route, navigation}) {
         refreshing={refreshing}
         onEndReached={() => loadPage()}
         onEndReachedThreshold={0.1}
-        keyExtractor={post => String(post.id)}
+        keyExtractor={data => String(data.post.id)}
         renderItem={item => renderRow(item)}
         ListFooterComponent={footer}
         onRefresh={refreshList}
@@ -188,9 +225,9 @@ const styles = StyleSheet.create({
   user: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginBottom: 5,
+    // marginBottom: 5,
     alignItems: 'center',
-    marginTop: 5
+    marginTop: 15
   },
   loader: {
     marginTop: 10,
@@ -213,6 +250,7 @@ const styles = StyleSheet.create({
   itemText: {
     fontSize: 12,
     padding: 5,
+    marginLeft: 10,
     bottom: 5
   },
 });

@@ -11,6 +11,7 @@ import LoginScreen from './Screen/LoginScreen';
 import RegisterScreen from './Screen/RegisterScreen';
 import DrawerNavigationRoutes from './Screen/DrawerNavigationRoutes';
 
+console.disableYellowBox = true;
 const Auth = createStackNavigator({
   //Stack Navigator for Login and Sign up Screen
   LoginScreen: {

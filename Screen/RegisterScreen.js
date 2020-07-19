@@ -110,7 +110,7 @@ const RegisterScreen = props => {
             <TextInput
               style={styles.inputStyle}
               onChangeText={UserName => setUserName(UserName)}
-              underlineColorAndroid="#FFFFFF"
+              underlineColorAndroid="transparent"
               placeholder="Enter User Name"
               placeholderTextColor="#F6F6F7"
               returnKeyType="next"
@@ -124,7 +124,7 @@ const RegisterScreen = props => {
             <TextInput
               style={styles.inputStyle}
               onChangeText={UserEmail => setUserEmail(UserEmail)}
-              underlineColorAndroid="#F6F6F7"
+              underlineColorAndroid="transparent"
               placeholder="Enter Email"
               placeholderTextColor="#F6F6F7"
               keyboardType="email-address"
@@ -141,7 +141,7 @@ const RegisterScreen = props => {
             <TextInput
               style={styles.inputStyle}
               onChangeText={password => setUserPassword(password)}
-              underlineColorAndroid="#F6F6F7"
+              underlineColorAndroid="transparent"
               placeholder="Enter Password"
               placeholderTextColor="#F6F6F7"
               keyboardType="numeric"
@@ -158,7 +158,7 @@ const RegisterScreen = props => {
             <TextInput
               style={styles.inputStyle}
               onChangeText={confirmPassword => setConfirmPassword(confirmPassword)}
-              underlineColorAndroid="#FFFFFF"
+              underlineColorAndroid="transparent"
               placeholder="Confirm Password"
               placeholderTextColor="#F6F6F7"
               autoCapitalize="sentences"
