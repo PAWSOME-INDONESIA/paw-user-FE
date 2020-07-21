@@ -9,7 +9,7 @@ const imageUrl = "https://paw-image-yej2q77qka-an.a.run.app/image/upload"
 const emailUrl = "https://paw-mail-yej2q77qka-an.a.run.app"
 
 // USER
-export const doLogin = (body) => {
+  export const doLogin = (body) => {
     const login  = fetch(userUrl + '/user/login', {
         method: 'POST',
         headers: myHeaders,
@@ -89,6 +89,27 @@ export const getUser = (id) => {
 
   return user
 }
+export const findUserByUsername = (id) => {
+  let value = id;
+  value = value.replace(/^"|"$/g, '');
+
+  const findUser  = fetch(userUrl + `/user/find?username=${value}`, {
+    method: 'GET',
+    headers: myHeaders,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return result.data.users
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return findUser
+}
 export const editUser = (id, body) => {
   let value = id;
   value = value.replace(/^"|"$/g, '');
@@ -161,6 +182,56 @@ export const getFollowings = (id) => {
 
   return followings
 }
+export const checkUsernameUnique = (username) => {
+  let value = username;
+  value = value.replace(/^"|"$/g, '');
+
+  const followings  = fetch(userUrl + `/user/find-by-exact-username?username=${value}`, {
+    method: 'GET',
+    headers: myHeaders,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        if(result.data.user.username === ""){
+          return 'success'
+        } else{
+          return 'existed'
+        }
+      } else {
+        return 'existed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return followings
+}
+export const checkEmailUnique = (email) => {
+  let value = email;
+  value = value.replace(/^"|"$/g, '');
+
+  const followings  = fetch(userUrl + `/user/find-by-email?email=${value}`, {
+    method: 'GET',
+    headers: myHeaders,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        if(result.data.user.email === ""){
+          return 'success'
+        } else{
+          return 'existed'
+        }
+      } else {
+        return 'existed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return followings
+}
 
 // POST
 export const getUserPost = (id, lastID) => {
@@ -183,27 +254,6 @@ export const getUserPost = (id, lastID) => {
     .catch(error => console.log('error', error));
 
   return userPost
-}
-export const getUserFeed = (id, lastID) => {
-  let value = id;
-  value = value.replace(/^"|"$/g, '');
-
-  const userFeed  = fetch(userUrl + `/post/following?userID=${value}&lastID=${lastID}&limit=5`, {
-    method: 'GET',
-    headers: myHeaders,
-    redirect: 'follow'
-  })
-    .then(response => response.json())
-    .then(result => {
-      if(result.success === true){
-        return result.data.postResponses
-      } else {
-        return 'failed'
-      }
-    })
-    .catch(error => console.log('error', error));
-
-  return userFeed
 }
 export const deleteUserPost = (postId) => {
   let value = postId;
@@ -266,6 +316,88 @@ export const getPostLikeCounter = (id) => {
 
   return postLikeCounter
 }
+export const getCommentCount = (postId) => {
+  let value = postId;
+  value = value.replace(/^"|"$/g, '');
+
+  const commentCount  = fetch(userUrl + `/comment/count?postID=${value}`, {
+    method: 'GET',
+    headers: myHeaders,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return result.data.commentsCount
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return commentCount
+}
+export const getCommentText = (postId, lastId) => {
+  let value = postId;
+  value = value.replace(/^"|"$/g, '');
+
+  const commentText  = fetch(userUrl + `/comment/by-post?postID=${value}&lastID=${lastId}&limit=5`, {
+    method: 'GET',
+    headers: myHeaders,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return result.data.comments
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return commentText
+}
+export const postComment = (postId, userId) => {
+  let value = postId;
+  value = value.replace(/^"|"$/g, '');
+
+  const commentPost  = fetch(userUrl + '/comment', {
+    method: 'GET',
+    headers: myHeaders,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return result.data.comments
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return commentPost
+}
+export const editUserPost = (text, postId) => {
+  const editUserPost  = fetch(userUrl + `/post/${postId}`, {
+    method: 'PUT',
+    headers: myHeaders,
+    body: text,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return result.data.post
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return editUserPost
+}
 
 // IMAGE
 export const uploadImage = (image) => {
@@ -277,7 +409,7 @@ export const uploadImage = (image) => {
     .then(response => response.json())
     .then(result => {
       if(result.success === true){
-        return result.data.image_url
+        return result.data
       } else {
         return 'failed'
       }
@@ -332,4 +464,25 @@ export const postPet = (body) => {
     .catch(error => console.log('error', error));
 
   return uploadPet
+}
+export const deleteUserPet = (petId) => {
+  let value = petId;
+  value = value.replace(/^"|"$/g, '');
+
+  const deletePet  = fetch(userUrl + `/pet/${value}`, {
+    method: 'DELETE',
+    headers: myHeaders,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return 'success'
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return deletePet
 }

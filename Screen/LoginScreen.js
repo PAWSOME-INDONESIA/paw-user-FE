@@ -8,8 +8,9 @@ import {
   Image,
   Keyboard,
   TouchableOpacity,
-  KeyboardAvoidingView,
+  KeyboardAvoidingView, ImageBackground,
 } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-community/async-storage';
 import Loader from './Components/Loader';
 import {doLogin} from "../utils/API";
@@ -19,16 +20,17 @@ const LoginScreen = props => {
   let [userPassword, setUserPassword] = useState('');
   let [loading, setLoading] = useState(false);
   let [errortext, setErrortext] = useState('');
+  let [errorEmail, setErrorEmail] = useState('');
+  let [errorPassword, setErrorPassword] = useState('');
 
   const handleSubmitPress = () => {
     setErrortext('');
     if (!userEmail) {
-      alert('Please fill Email');
-      return;
+      setErrorEmail(true)
     }
-    if (!userPassword) {
-      alert('Please fill Password');
-      return;
+    if (!userPassword || !userEmail) {
+      setErrorPassword(true)
+      return
     }
     setLoading(true);
 
@@ -60,47 +62,52 @@ const LoginScreen = props => {
   };
 
   return (
-    <View style={styles.mainBody}>
+    <ImageBackground style={styles.mainBody} source={require('../assets/login_bg.png')}>
       <Loader loading={loading} />
       <ScrollView keyboardShouldPersistTaps="handled">
-        <View style={{ marginTop: 100 }}>
-          <KeyboardAvoidingView enabled>
-            <View style={{ alignItems: 'center' }}>
+        <View style={{ marginTop: 50, justifyContent: 'center', alignItems: 'center', height: 650 }}>
+          <KeyboardAvoidingView behavior="padding">
+            <View style={{ alignItems: 'center', height: 400, width: 400, justifyContent: 'center'}}>
               <Image
-                source={require('../assets/ggwp.png')}
+                source={require('../assets/ggwp3.png')}
                 style={{
-                  width: '50%',
-                  height: 100,
-                  resizeMode: 'contain',
-                  margin: 30,
+                  width: 200,
+                  height: 200,
+                  borderRadius: 100,
                 }}
               />
             </View>
+            <Text style={{fontWeight: '800', marginLeft: 35, color: '#908d8d', fontSize: 18, marginBottom: 15}}>
+              Welcome!
+            </Text>
             <View style={styles.SectionStyle}>
               <TextInput
-                style={styles.inputStyle}
-                onChangeText={UserEmail => setUserEmail(UserEmail)}
+                style={[styles.inputStyle, errorEmail && styles.errorBox]}
+                onChangeText={UserEmail => {
+                  setUserEmail(UserEmail)
+                  setErrorEmail(false)
+                }}
                 underlineColorAndroid="transparent"
-                placeholder="Enter Email" //dummyv@abc.com
-                placeholderTextColor="#F6F6F7"
+                placeholder="Email"
+                placeholderTextColor="grey"
                 autoCapitalize="none"
                 keyboardType="email-address"
                 returnKeyType="next"
-                onSubmitEditing={() =>
-                  this.passwordInput && this.passwordInput.focus()
-                }
+                // onSubmitEditing={() =>
+                //   this.pass && this.pass.focus()
+                // }
                 blurOnSubmit={false}
               />
             </View>
             <View style={styles.SectionStyle}>
               <TextInput
-                style={styles.inputStyle}
+                style={[styles.inputStyle, errorPassword && styles.errorBox]}
                 onChangeText={UserPassword => setUserPassword(UserPassword)}
                 underlineColorAndroid="transparent"
-                placeholder="Enter Password" //12345
-                placeholderTextColor="#F6F6F7"
+                placeholder="Password"
+                placeholderTextColor="grey"
                 keyboardType="default"
-                ref={ref => this.passwordInput = ref}
+                // ref={ref => this.pass = ref}
                 onSubmitEditing={Keyboard.dismiss}
                 blurOnSubmit={false}
                 secureTextEntry={true}
@@ -113,17 +120,25 @@ const LoginScreen = props => {
               style={styles.buttonStyle}
               activeOpacity={0.5}
               onPress={handleSubmitPress}>
-              <Text style={styles.buttonTextStyle}>LOGIN</Text>
+              <Text style={styles.buttonTextStyle}>Login</Text>
             </TouchableOpacity>
             <Text
-              style={styles.registerTextStyle}
+              style={styles.forgotPassword}
+              onPress={() => console.log('forgot pass')}>
+              Forgot password?
+            </Text>
+            <Text
+              style={styles.registerTextStyle2}
               onPress={() => props.navigation.navigate('RegisterScreen')}>
-              New Here ? Register
+              Don't have an account?
+              <Text style={styles.registerTextStyle}>
+                {`  Sign Up`}
+              </Text>
             </Text>
           </KeyboardAvoidingView>
         </View>
       </ScrollView>
-    </View>
+    </ImageBackground>
   );
 };
 export default LoginScreen;
@@ -132,24 +147,24 @@ const styles = StyleSheet.create({
   mainBody: {
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: '#FF914D',
+    backgroundColor: 'white',
+    alignItems: 'center'
   },
   SectionStyle: {
     flexDirection: 'row',
     height: 40,
-    marginTop: 20,
+    marginTop: 10,
     marginLeft: 35,
     marginRight: 35,
     margin: 10,
   },
   buttonStyle: {
-    backgroundColor: '#7DE24E',
+    justifyContent: 'center',
+    backgroundColor: '#FF5C2C',
     borderWidth: 0,
-    color: '#FFFFFF',
-    borderColor: '#7DE24E',
-    height: 40,
+    height: 50,
     alignItems: 'center',
-    borderRadius: 30,
+    borderRadius: 15,
     marginLeft: 35,
     marginRight: 35,
     marginTop: 20,
@@ -159,25 +174,46 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     paddingVertical: 10,
     fontSize: 16,
+    fontWeight: "600"
   },
   inputStyle: {
     flex: 1,
-    color: 'white',
+    color: 'black',
     paddingLeft: 15,
     paddingRight: 15,
     borderWidth: 1,
-    borderRadius: 30,
+    borderRadius: 15,
+    height: 50,
     borderColor: 'white',
+    backgroundColor: '#EDEEF1'
   },
   registerTextStyle: {
-    color: '#FFFFFF',
+    color: '#FF5C2C',
     textAlign: 'center',
     fontWeight: 'bold',
+    fontSize: 14,
+    marginTop: 20
+  },
+  registerTextStyle2: {
+    color: '#C9C9CB',
+    textAlign: 'center',
+    fontSize: 14,
+    marginTop: 20,
+    height: 100,
+  },
+  forgotPassword: {
+    color: '#FF5C2C',
+    textAlign: 'center',
+    fontWeight: '500',
     fontSize: 14,
   },
   errorTextStyle: {
     color: 'red',
     textAlign: 'center',
     fontSize: 14,
+    marginTop: 10,
   },
+  errorBox: {
+    borderColor: '#FF5C2C'
+  }
 });

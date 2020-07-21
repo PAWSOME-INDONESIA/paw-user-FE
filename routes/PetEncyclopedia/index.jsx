@@ -28,22 +28,22 @@ export default function PetEncyclopedia(){
   }
 
   const renderList = ({item, index}) => {
-    return (
-      <ListItem thumbnail>
-        <Left>
-          <Thumbnail square source={{ uri: item.thumbnailUrl }} />
-        </Left>
-        <Body>
-          <Text>{item.id}</Text>
-          <Text note numberOfLines={1}>{item.title}</Text>
-        </Body>
-        <Right>
-          <Button transparent>
-            <Text>View</Text>
-          </Button>
-        </Right>
-      </ListItem>
-    )
+    // return (
+    //   <ListItem thumbnail>
+    //     <Left>
+    //       <Thumbnail square source={{ uri: item.thumbnailUrl }} />
+    //     </Left>
+    //     <Body>
+    //       <Text>{item.id}</Text>
+    //       <Text note numberOfLines={1}>{item.title}</Text>
+    //     </Body>
+    //     <Right>
+    //       <Button transparent>
+    //         <Text>View</Text>
+    //       </Button>
+    //     </Right>
+    //   </ListItem>
+    // )
   }
 
   const renderFooter = () => {

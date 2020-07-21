@@ -11,9 +11,14 @@ import {
   Dimensions, ImageBackground
 } from 'react-native';
 
+import moment from 'moment';
+import isEmpty from 'lodash/isEmpty';
+
 import { PinchGestureHandler, State } from 'react-native-gesture-handler'
 import AsyncStorage from "@react-native-community/async-storage";
-import isEmpty from "lodash/isEmpty";
+
+import { getPostLikeCounter, getCommentCount }  from '../../utils/API'
+import Comment from "../../components/Comment";
 
 const Reducer = (state, action) => {
   if(action.type === 'first'){
@@ -39,6 +44,9 @@ export default function Home(props) {
   const [likes, setLikes] = useState(false);
   const [lastId, setLastId] = useState('');
   const [lastPage, setLastPage] = useState(false);
+  const [postId, setPostId] = useState('');
+  const [userId, setUserId] = useState('');
+  const [showComment, setShowComment] = useState(false);
   const [state, dispatch] = useReducer(Reducer, {
     first: {}
   })
@@ -56,6 +64,8 @@ export default function Home(props) {
 
     setLoading(true)
     const token = await AsyncStorage.getItem('@session').then(res =>{return res})
+
+    setUserId(token)
 
     const response = await fetch(`https://paw-user-yej2q77qka-an.a.run.app/post/following?userID=${token}&lastID=${lastId}&limit=2`, {
       method: 'get',
@@ -101,17 +111,6 @@ export default function Home(props) {
     setRefreshing(false)
   }
 
-  if(isEmpty(feed)){
-    return(
-      <ImageBackground source={{uri: 'https://wallpapercave.com/wp/wp3898298.png'}}
-                         style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Text style={{fontWeight: '600', fontSize: 24, color: 'black', top: -200}}>
-          No Home Feed, Follow Someone
-        </Text>
-      </ImageBackground>
-    )
-  }
-
   const PinchableBox = props => {
     const scale = new Animated.Value(1)
     const onPinchEvent = Animated.event(
@@ -147,14 +146,13 @@ export default function Home(props) {
             zIndex: 10,
           }}
           transition="opacity"
-          resizeMode='contain'
+          resizeMode='cover'
         />
       </PinchGestureHandler>
     )
   }
 
   const renderRow = ({item}) => {
-
     let lastTap = null;
     const handleDoubleTap = (id) => {
       const now = Date.now();
@@ -165,9 +163,20 @@ export default function Home(props) {
         lastTap = now;
       }
     }
+    let likesCount = 0
+    let commentCount = 0
+
+    getPostLikeCounter(item.post.id).then(res => {
+      likesCount = res.likesCount
+    })
+
+    getCommentCount(item.post.id).then(res => {
+      commentCount = res
+    })
+
+    setPostId(item.post.id)
 
     const likeStatus = likes ? require('../../assets/paw-filled.png') : require('../../assets/paw-empty.png')
-
     return(
       <View style={styles.item}>
         <View style={styles.user}>
@@ -180,8 +189,24 @@ export default function Home(props) {
             <Image style={{width: 22, height: 22}} source={likeStatus}/>
           </View>
         </TouchableOpacity>
-        <Text style={styles.itemText}>100 likess</Text>
-        <Text style={styles.itemText}>{item.post.caption}</Text>
+        <Text style={styles.itemText}>{likesCount} likes</Text>
+        <Text style={{fontWeight: 'bold', paddingLeft: 15}}>
+          {item.user.username}
+          <Text style={{fontWeight: 'normal'}}>
+            {`  ${item.post.caption}`}
+          </Text>
+        </Text>
+        {
+          commentCount === 0 && commentCount < 3 &&
+          <TouchableOpacity style={{marginTop: 15}} onPress={() => setShowComment(true)}>
+            <Text style={styles.itemText}>Add Comment</Text>
+          </TouchableOpacity>
+        }
+        <View style={styles.createdAt}>
+          <Text style={{fontSize: 11, color: '#a4a4a7'}}>
+            {moment(item.post.created_at).fromNow()}
+          </Text>
+        </View>
       </View>
     )
   };
@@ -201,7 +226,11 @@ export default function Home(props) {
 
   return (
     <View style={styles.container}>
-      <FlatList
+      {showComment ? (
+        <View>
+          <Comment postId={postId} userId={userId}/>
+        </View>
+      ) : <FlatList
         data={feed}
         refreshing={refreshing}
         onEndReached={() => loadPage()}
@@ -210,7 +239,7 @@ export default function Home(props) {
         renderItem={item => renderRow(item)}
         ListFooterComponent={footer}
         onRefresh={refreshList}
-      />
+      />}
     </View>
   );
 }
@@ -227,14 +256,15 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     // marginBottom: 5,
     alignItems: 'center',
-    marginTop: 15
+    marginTop: 15,
+    marginBottom: 15
   },
   loader: {
     marginTop: 10,
     alignItems: 'center'
   },
   item: {
-    marginBottom: 20
+    backgroundColor: 'white'
   },
   itemImage: {
     width: SIZE,
@@ -244,8 +274,8 @@ const styles = StyleSheet.create({
   likes: {
     height: 35,
     width: 35,
-    marginLeft: 10,
-    marginTop: 5,
+    marginLeft: 15,
+    marginTop: 10,
   },
   itemText: {
     fontSize: 12,
@@ -253,4 +283,16 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     bottom: 5
   },
+  itemText2: {
+    fontSize: 12,
+    padding: 5,
+    marginLeft: 10,
+    bottom: 5,
+    marginBottom: 20
+  },
+  createdAt: {
+    marginBottom: 20,
+    marginLeft: 10,
+    padding: 5,
+  }
 });

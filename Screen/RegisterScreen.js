@@ -8,10 +8,11 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   TouchableOpacity,
-  ScrollView,
+  ScrollView, ImageBackground,
 } from 'react-native';
+import { BarPasswordStrengthDisplay } from 'react-native-password-strength-meter';
 import Loader from './Components/Loader';
-import {doRegister} from "../utils/API";
+import { doRegister, checkUsernameUnique, checkEmailUnique } from "../utils/API";
 
 const RegisterScreen = props => {
   let [userName, setUserName] = useState('');
@@ -19,6 +20,9 @@ const RegisterScreen = props => {
   let [userPassword, setUserPassword] = useState('');
   let [confirmPassword, setConfirmPassword] = useState('');
   let [loading, setLoading] = useState(false);
+  let [checkUsername, setCheckUsername] = useState(false);
+  let [checkEmail, setCheckEmail] = useState(false);
+  let [checkPassword, setCheckPassword] = useState(false);
   let [errortext, setErrortext] = useState('');
   let [isRegistraionSuccess, setIsRegistraionSuccess] = useState(false);
 
@@ -73,7 +77,7 @@ const RegisterScreen = props => {
       <View
         style={{
           flex: 1,
-          backgroundColor: '#307ecc',
+          backgroundColor: 'white',
           justifyContent: 'center',
         }}>
         <Image
@@ -91,49 +95,80 @@ const RegisterScreen = props => {
     );
   }
   return (
-    <View style={{ flex: 1, backgroundColor: '#307ecc' }}>
+    <ImageBackground style={{ flex: 1, justifyContent: 'center' }} source={require('../assets/login_bg.png')}>
       <Loader loading={loading} />
       <ScrollView keyboardShouldPersistTaps="handled">
-        <View style={{ alignItems: 'center' }}>
+        <View style={{ alignItems: 'center', marginTop: 80 }}>
           <Image
-            source={require('../assets/pawsome_logo.png')}
+            source={require('../assets/ggwp3.png')}
             style={{
-              width: '50%',
-              height: 100,
+              width: 150,
+              height: 150,
               resizeMode: 'contain',
               margin: 30,
+              borderRadius: 100
             }}
           />
         </View>
-        <KeyboardAvoidingView enabled>
+        <KeyboardAvoidingView behavior="padding">
           <View style={styles.SectionStyle}>
             <TextInput
-              style={styles.inputStyle}
-              onChangeText={UserName => setUserName(UserName)}
+              style={[styles.inputStyle, checkUsername && styles.textValid]}
+              onChangeText={UserName => {
+                if(UserName.length <= 2){
+                  setCheckUsername(true)
+                }
+                if(UserName.length > 2){
+                  checkUsernameUnique(UserName).then(res => {
+                    if(res === 'success'){
+                      setCheckUsername(false)
+                    } else if(res === 'existed'){
+                      setCheckUsername(true)
+                    }
+                  })
+                }
+                setUserName(UserName)
+              }}
               underlineColorAndroid="transparent"
-              placeholder="Enter User Name"
-              placeholderTextColor="#F6F6F7"
+              placeholder="Username"
+              placeholderTextColor="grey"
               returnKeyType="next"
-              onSubmitEditing={() =>
-                this.emailInput && this.emailInput.focus()
-              }
+              autoCapitalize="none"
+              // onSubmitEditing={() =>
+              //   this.emailInput && this.emailInput.focus()
+              // }
               blurOnSubmit={false}
             />
           </View>
           <View style={styles.SectionStyle}>
             <TextInput
-              style={styles.inputStyle}
-              onChangeText={UserEmail => setUserEmail(UserEmail)}
-              underlineColorAndroid="transparent"
-              placeholder="Enter Email"
-              placeholderTextColor="#F6F6F7"
-              keyboardType="email-address"
-              ref={ref => {
-                this.emailInput = ref;
+              style={[styles.inputStyle, checkEmail && styles.textValid]}
+              onChangeText={UserEmail => {
+                let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+                if (reg.test(UserEmail) === false) {
+                  setCheckEmail(true)
+                }
+                else {
+                  checkEmailUnique(UserEmail).then(res => {
+                    if(res === 'success'){
+                      setCheckEmail(false)
+                    } else if(res === 'existed'){
+                      setCheckEmail(true)
+                    }
+                  })
+                }
+                setUserEmail(UserEmail)
               }}
+              underlineColorAndroid="transparent"
+              placeholder="Email"
+              placeholderTextColor="grey"
+              keyboardType="email-address"
+              // ref={ref => {
+              //   this.emailInput = ref;
+              // }}
               returnKeyType="next"
               autoCapitalize="none"
-              onSubmitEditing={() => this.passwordInput && this.passwordInput.focus()}
+              // onSubmitEditing={() => this.passwordInput && this.passwordInput.focus()}
               blurOnSubmit={false}
             />
           </View>
@@ -142,29 +177,46 @@ const RegisterScreen = props => {
               style={styles.inputStyle}
               onChangeText={password => setUserPassword(password)}
               underlineColorAndroid="transparent"
-              placeholder="Enter Password"
-              placeholderTextColor="#F6F6F7"
-              keyboardType="numeric"
-              ref={ref => {
-                this.passwordInput = ref;
-              }}
-              onSubmitEditing={() =>
-                this.confirmPassword && this.confirmPassword.focus()
-              }
+              placeholder="Password"
+              placeholderTextColor="grey"
+              secureTextEntry={true}
+              textContentType={'oneTimeCode'}
+              // ref={ref => {
+              //   this.passwordInput = ref;
+              // }}
+              // onSubmitEditing={() =>
+              //   this.confirmPassword && this.confirmPassword.focus()
+              // }
               blurOnSubmit={false}
             />
           </View>
+          {userPassword.length > 0 &&
+          <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+            <BarPasswordStrengthDisplay
+              password={userPassword}
+              width={320}
+              minLength={0}
+            />
+          </View>
+          }
           <View style={styles.SectionStyle}>
             <TextInput
-              style={styles.inputStyle}
-              onChangeText={confirmPassword => setConfirmPassword(confirmPassword)}
+              style={[styles.inputStyle, checkPassword && styles.textValid]}
+              onChangeText={cpass => {
+                if(userPassword !== cpass){
+                  setCheckPassword(true)
+                } else {
+                  setCheckPassword(false)
+                }
+                setConfirmPassword(cpass)
+              }}
               underlineColorAndroid="transparent"
               placeholder="Confirm Password"
-              placeholderTextColor="#F6F6F7"
-              autoCapitalize="sentences"
-              ref={ref => {
-                this.confirmPassword = ref;
-              }}
+              placeholderTextColor="grey"
+              secureTextEntry={true}
+              // ref={ref => {
+              //   this.confirmPassword = ref;
+              // }}
               returnKeyType="next"
               onSubmitEditing={Keyboard.dismiss}
               blurOnSubmit={false}
@@ -177,11 +229,19 @@ const RegisterScreen = props => {
             style={styles.buttonStyle}
             activeOpacity={0.5}
             onPress={handleSubmitButton}>
-            <Text style={styles.buttonTextStyle}>REGISTER</Text>
+            <Text style={styles.buttonTextStyle}>Sign Up</Text>
           </TouchableOpacity>
+          <Text
+            style={styles.registerTextStyle2}
+            onPress={() => props.navigation.navigate('LoginScreen')}>
+            Already have an account?
+            <Text style={styles.registerTextStyle}>
+              {`  Sign In`}
+            </Text>
+          </Text>
         </KeyboardAvoidingView>
       </ScrollView>
-    </View>
+    </ImageBackground>
   );
 };
 export default RegisterScreen;
@@ -195,32 +255,50 @@ const styles = StyleSheet.create({
     marginRight: 35,
     margin: 10,
   },
+  registerTextStyle: {
+    color: '#FF5C2C',
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  registerTextStyle2: {
+    color: '#C9C9CB',
+    textAlign: 'center',
+    fontSize: 14,
+    marginTop: 10,
+    height: 100,
+  },
   buttonStyle: {
-    backgroundColor: '#7DE24E',
+    justifyContent: 'center',
+    backgroundColor: '#FF5C2C',
     borderWidth: 0,
-    color: '#FFFFFF',
-    borderColor: '#7DE24E',
-    height: 40,
+    height: 50,
     alignItems: 'center',
-    borderRadius: 30,
+    borderRadius: 15,
     marginLeft: 35,
     marginRight: 35,
     marginTop: 20,
     marginBottom: 20,
   },
   buttonTextStyle: {
-    color: 'black',
+    color: '#FFFFFF',
     paddingVertical: 10,
     fontSize: 16,
+    fontWeight: "600"
   },
   inputStyle: {
     flex: 1,
-    color: 'white',
+    color: 'black',
     paddingLeft: 15,
     paddingRight: 15,
     borderWidth: 1,
-    borderRadius: 30,
+    borderRadius: 15,
+    height: 50,
     borderColor: 'white',
+    backgroundColor: '#EDEEF1'
+  },
+  textValid: {
+    borderColor: 'red',
   },
   errorTextStyle: {
     color: 'red',
@@ -228,9 +306,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   successTextStyle: {
-    color: 'white',
+    color: 'black',
     textAlign: 'center',
     fontSize: 18,
+    fontWeight: 'bold',
     padding: 30,
   },
 });

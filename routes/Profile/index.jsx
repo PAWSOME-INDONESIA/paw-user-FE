@@ -19,7 +19,6 @@ import Post from './Post';
 import Pets from "./Pets";
 
 import {getFollowers, getFollowings, getUser, getPet, getUserPost} from "../../utils/API";
-import Followers from "./Followers";
 import {translate} from '../../utils/i18n'
 
 const TabBarHeight = 48;
@@ -89,6 +88,7 @@ export default function Profile(props) {
   const [pet, setPet] = useState([]);
   const [userPost, setUserPost] = useState([]);
   const [userPostDetail, setUserPostDetail] = useState({});
+  const [userPetDetail, setUserPetDetail] = useState({});
   const [tabIndex, setIndex] = useState(0);
   const [routes] = useState([
     {key: 'tab1', title: 'Posts'},
@@ -104,6 +104,7 @@ export default function Profile(props) {
     if(props.route.params && props.route.params.loadPage && props.route.params.userPost){
       setLoading(true)
       setIndex(0)
+      console.log(props.route, userPost)
       setUserPost([props.route.params.userPost, ...userPost])
     }
     if(props.route.params && props.route.params.loadPage && props.route.params.userPet){
@@ -238,6 +239,12 @@ export default function Profile(props) {
     setUserPost(filteredItems)
   }
 
+  const deletePet = (id) => {
+    const filteredItems = pet.filter(item => item.id !== id)
+    console.log(id, filteredItems, 'helo delete pet infornt')
+    setPet(filteredItems)
+  }
+
   const renderHeader = () => {
     const y = scrollY.interpolate({
       inputRange: [0, HeaderHeight],
@@ -248,14 +255,14 @@ export default function Profile(props) {
       <Animated.View style={[styles.header, {transform: [{translateY: y}]}]}>
         <View style={{ alignItems: 'center', flexDirection: 'row', marginTop: 30}}>
           <View style={styles.avatarContainer}>
-            <Image style={styles.avatar} source={{uri: userProfile.imageUrl}}/>
+            <Image style={styles.avatar} source={{uri: userProfile.imageUrl || 'https://icon-library.com/images/google-user-icon/google-user-icon-21.jpg'}}/>
           </View>
 
           <View style={styles.statsContainer}>
-            <View style={styles.stat}>
-              <Text style={styles.statAmount}>12</Text>
+            <TouchableOpacity style={styles.stat} onPress={() => setIndex(0)}>
+              <Text style={styles.statAmount}>{userPost && userPost.length || 0}</Text>
               <Text style={styles.statTitle}>post</Text>
-            </View>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.stat} onPress={toggleModalFollowers}>
               <Text style={styles.statAmount}>{followers.length}</Text>
               <Text style={styles.statTitle}>followers</Text>
@@ -264,7 +271,7 @@ export default function Profile(props) {
               <Text style={styles.statAmount}>{followings.length}</Text>
               <Text style={styles.statTitle}>following</Text>
             </View>
-            <TouchableOpacity style={styles.stat} onPress={toggleModalPet}>
+            <TouchableOpacity style={styles.stat} onPress={() => setIndex(1)}>
               <Text style={styles.statAmount}>{pet.length}</Text>
               <Text style={styles.statTitle}>pets</Text>
             </TouchableOpacity>
@@ -280,9 +287,7 @@ export default function Profile(props) {
           <TouchableOpacity onPress={toggleModalEditProfile} style={styles.editProfile}>
             <Text style={styles.editProfileText}>{translate(global.userLang, 'editProfile')}</Text>
           </TouchableOpacity>
-
-          {/*<Followers open={modalFollowers} close={() => toggleModalFollowers}/>*/}
-          {/*<Pets open={modalPet} close={()=> toggleModalPet} navigation={props.navigation}/>*/}
+          <Pets visible={modalPet} onClose={toggleModalPet} pet={userPetDetail} deletePet={id => deletePet(id)} userProfile={userProfile}/>
           <EditProfile open={modalVisible} editProfile={(res) => onEditProfile(res)} close={()=> toggleModalEditProfile()} userProfile={userProfile}/>
           <Post visible={modalPost} onClose={togglePostDetail} post={userPostDetail} deletePost={id => deletePost(id)} userProfile={userProfile}/>
         </View>
@@ -291,23 +296,29 @@ export default function Profile(props) {
   };
 
   const renderUserPet = ({item, index}) => {
+    const longPress =()=> {
+      toggleModalPet()
+      setUserPetDetail(item)
+    }
     return (
       <View>
-        <Image
-          source={{uri: item.imageUrl}}
-          style={{
-            borderRadius: 16,
-            marginLeft: index % 2 === 0 ? 0 : 10,
-            width: tab1ItemSize,
-            height: tab1ItemSize,
-            backgroundColor: '#aaa',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        />
-        <Text style={{textAlign: 'center', fontWeight: 'bold'}}>
-          {item.name}
-        </Text>
+        <TouchableOpacity onPress={longPress}>
+          <Image
+            source={{uri: item.imageUrl}}
+            style={{
+              borderRadius: 16,
+              marginLeft: index % 2 === 0 ? 0 : 10,
+              width: tab1ItemSize,
+              height: tab1ItemSize,
+              backgroundColor: '#aaa',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          />
+          <Text style={{textAlign: 'center', fontWeight: 'bold'}}>
+            {item.name}
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   };

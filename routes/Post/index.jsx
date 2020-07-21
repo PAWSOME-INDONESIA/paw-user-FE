@@ -128,14 +128,20 @@ export default function Post(props) {
           setUploading(true)
           uploadImage(fd).then(val => {
             const param = JSON.stringify({
-              "imageUrl": val,
+              "imageUrl": val.image_url,
               "userID": userId,
-              "caption": caption
+              "caption": caption,
+              "type": val.type
             })
             postUserPost(param).then(res => {
-              setUploading(false)
-              setSelectedImage(null)
-              props.navigation.navigate('Profile', {loadPage: true, userPost: res})
+              if(res !== 'failed'){
+                setUploading(false)
+                setSelectedImage(null)
+                props.navigation.navigate('Profile', {loadPage: true, userPost: res})
+              } else {
+                setSelectedImage(null)
+                setUploading(false)
+              }
             })
           })
         }
@@ -153,19 +159,20 @@ export default function Post(props) {
         {
           setUploading(true)
           uploadImage(fd).then(val => {
-            console.log(val, 'helo upload')
             const param = JSON.stringify({
-              "imageUrl": val,
+              "imageUrl": val.image_url,
               "userID": userId,
               "name": caption,
               "birthDate": moment(bday).format('YYYY-MM-DD')
             })
-            console.log(param, 'helo param')
             postPet(param).then(res => {
-              console.log(res, 'helo res pet')
-              setUploading(false)
-              setSelectedImage2(null)
-              props.navigation.navigate('Profile', {loadPage: true, userPet: res})
+              if(res){
+                setUploading(false)
+                setSelectedImage2(null)
+                props.navigation.navigate('Profile', {loadPage: true, userPet: res})
+              } else {
+                setUploading(false)
+              }
             })
           })
         }

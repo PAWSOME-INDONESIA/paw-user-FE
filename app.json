@@ -9,9 +9,9 @@
     ],
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/ggwp.png",
+    "icon": "./assets/ggwp3.png",
     "splash": {
-      "image": "./assets/ggwp.png",
+      "image": "./assets/ggwp3.png",
       "resizeMode": "contain",
       "backgroundColor": "#FF914D"
     },

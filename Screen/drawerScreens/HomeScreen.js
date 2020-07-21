@@ -13,6 +13,7 @@ import Profile from '../../routes/Profile';
 
 //Import all required component
 import { View, Text } from 'react-native';
+import Search from "../../routes/Search";
 
 const HomeScreen = () => {
   global.currentScreenIndex = 'HomeScreen';
@@ -75,7 +76,17 @@ function MyTabs(props) {
                 color={color}
               />
             );
-          } else if (route.name === 'Map') {
+          }
+          else if (route.name === 'Find') {
+            return (
+              <Ionicons
+                name={focused ? 'ios-search' : 'ios-search'}
+                size={size}
+                color={color}
+              />
+            );
+          }
+          else if (route.name === 'Map') {
             return (
             <FontAwesome5
               name="map-marked-alt"
@@ -100,6 +111,7 @@ function MyTabs(props) {
     >
       <Tab.Screen name="Home" component={Home} />
       <Tab.Screen name="Add" component={Post} />
+      <Tab.Screen name="Find" component={Search} />
       <Tab.Screen name="Map" component={Map} />
       <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>

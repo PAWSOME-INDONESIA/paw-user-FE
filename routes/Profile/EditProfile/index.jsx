@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   StyleSheet,
   Text, TextInput,
@@ -14,6 +14,7 @@ import DatePicker from "react-native-datepicker";
 
 import {editUser, uploadImage} from "../../../utils/API";
 import isEmpty from "react-native-web/dist/vendor/react-native/isEmpty";
+import Loader from "../../../Screen/Components/Loader";
 
 export default function EditProfile(props) {
   const [date, setDate] = useState(moment(props.userProfile.birthDate).format('YYYY-MM-DD'));
@@ -21,6 +22,7 @@ export default function EditProfile(props) {
   const [phoneNumber, setPhoneNumber] = useState(props.userProfile.phoneNumber);
   const [bio, setBio] = useState(props.userProfile.bio);
   const [imageUrl, setImageUrl] = useState(props.userProfile.imageUrl);
+  const [uploading, setUploading] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -28,8 +30,18 @@ export default function EditProfile(props) {
     setDate(props)
   }
 
+  useEffect(() => {
+    setUserName(props.userProfile.username)
+    setPhoneNumber(props.userProfile.phoneNumber)
+    setBio(props.userProfile.bio)
+    setImageUrl(props.userProfile.imageUrl)
+    setDate(moment(props.userProfile.birthDate).format('YYYY-MM-DD'))
+
+  },[props.userProfile])
+
   const editProfile = () => {
     setSaving(true)
+    if(!uploading){
       const param = JSON.stringify({
         "username": userName,
         "phoneNumber": phoneNumber,
@@ -38,21 +50,24 @@ export default function EditProfile(props) {
         "imageUrl": imageUrl
       })
 
-    console.log(param, 'edit success')
-
-    editUser(props.userProfile.id, param).then(res => {
-      if(res !== 'failed'){
-        setSaving(false)
-        props.editProfile(res)
-      } else {
-        setSaving(false)
-        alert('Failed to edit profile')
-      }
-    })
+      editUser(props.userProfile.id, param).then(res => {
+        if(res !== 'failed'){
+          setSaving(false)
+          props.editProfile(res)
+        } else {
+          setSaving(false)
+          alert('Failed to edit profile')
+        }
+      })
+    } else {
+      alert('image still uploading')
+      setSaving(false)
+    }
   }
 
   const closeImage = () => {
     setSelectedImage(null)
+    setImageUrl(props.userProfile.imageUrl)
   }
 
   const changeProfilePic = async () => {
@@ -81,10 +96,12 @@ export default function EditProfile(props) {
     // Assume "photo" is the name of the form field the server expects
     formData.append('image', { uri: localUri, name: filename, type });
 
+    setUploading(true)
     uploadImage(formData).then(val => {
-      if(val){
-        setImageUrl(`${val}`)
-        alert('success upload')
+      if(val.image_url){
+        setImageUrl(`${val.image_url}`)
+        setUploading(false)
+        alert('image uploaded!')
       }
     })
 
@@ -101,6 +118,7 @@ export default function EditProfile(props) {
         swipeThreshold={50}
         swipeDirection={['down']}
       >
+        <Loader loading={uploading} />
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : null}
           style={{ flex: 1 }}
@@ -165,6 +183,19 @@ export default function EditProfile(props) {
 
                     <View style={styles.editProfileRow}>
                       <Text style={styles.formText}>
+                        Email
+                      </Text>
+                      <TextInput
+                        style={styles.formDisabled}
+                        placeholder="e.g., Brown"
+                        defaultValue={props.userProfile.email || ''}
+                        onChangeText={text => setUserName(text)}
+                        editable={false}
+                      />
+                    </View>
+
+                    <View style={styles.editProfileRow}>
+                      <Text style={styles.formText}>
                         Phone Number
                       </Text>
                       <TextInput
@@ -198,8 +229,8 @@ export default function EditProfile(props) {
                         date={date}
                         placeholder="Select date"
                         format="YYYY-MM-DD"
-                        minDate="2012-05-01"
-                        maxDate="2050-05-01"
+                        minDate="1950-05-01"
+                        maxDate="2021-05-01"
                         confirmBtnText="Confirm"
                         cancelBtnText="Cancel"
                         customStyles={{
@@ -241,7 +272,7 @@ export default function EditProfile(props) {
 const styles = StyleSheet.create({
   container : {
     flex: 1,
-    marginTop: '40%',
+    marginTop: '30%',
   },
   editProfileForm: {
     flexDirection: 'column',
@@ -266,6 +297,12 @@ const styles = StyleSheet.create({
     height: 40,
     marginLeft: 30,
     width: 200,
+  },
+  formDisabled: {
+    height: 40,
+    marginLeft: 30,
+    width: 200,
+    color: 'grey'
   },
   imageProfile: {
     marginBottom: 10,
@@ -295,7 +332,7 @@ const styles = StyleSheet.create({
   modalView: {
     margin: 20,
     width: '100%',
-    height: '90%',
+    height: '100%',
     backgroundColor: "white",
     borderRadius: 20,
     padding: 35,

@@ -3,27 +3,30 @@ import {StyleSheet, Text, View, Dimensions, Image, TouchableOpacity} from 'react
 import MapView, {Circle, Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import AsyncStorage from "@react-native-community/async-storage";
 import isEmpty from "lodash/isEmpty";
-import { Button } from 'native-base'
-import {getFollowers, getFollowings, getPet, getUser, getUserPost} from "../../utils/API";
+import * as Location from 'expo-location';
+import { getPet } from "../../utils/API";
 
 export default function Map() {
   const [pet, setPet] = useState([]);
   const [mapType, setMapType] = useState('standard')
+  const [mapTypeReverse, setMapTypeReverse] = useState('Satellite Map Style')
   const [latitudeDelta, setLatitudeDelta] = useState(0.002)
   const [longitudeDelta, setLongitudeDelta] = useState(0.002)
+  const [longitude, setLongitude] = useState(106.79059391)
+  const [latitude, setLatitude] = useState(-6.103958224)
 
   useEffect(() => {
     const intervalId = setInterval(() => {
       AsyncStorage.getItem('@session').then(res => {
         getPet(res, 'true').then(pet => {
-          console.log(pet, 'helo pet')
+          // console.log(pet, 'helo dum')
           if(pet === 'failed'){
             return
           }
           setPet(pet)
         })
       })
-    }, 5000)
+    }, 50000)
 
     return () => clearInterval(intervalId);
 
@@ -34,20 +37,20 @@ export default function Map() {
       <MapView
         style={StyleSheet.absoluteFillObject}
         region={{
-          latitude: -6.103958224,
-          longitude: 106.79059391,
+          latitude: latitude,
+          longitude: longitude,
           latitudeDelta: latitudeDelta,
           longitudeDelta: longitudeDelta,
         }}
         zoomEnabled={true}
         onRegionChangeComplete={reg => {
-          if(latitudeDelta !== reg.latitudeDelta){
-            setLatitudeDelta(reg.latitudeDelta)
-            setLongitudeDelta(reg.longitudeDelta)
-          }
+          setLatitudeDelta(reg.latitudeDelta)
+          setLongitudeDelta(reg.longitudeDelta)
+          setLatitude(reg.latitude)
+          setLongitude(reg.longitude)
         }}
         loadingEnabled
-        showsMyLocationButton = {true}
+        // showsMyLocationButton={true}
         followsUserLocation={true}
         loadingIndicatorColor="#666666"
         loadingBackgroundColor="#eeeeee"
@@ -79,23 +82,45 @@ export default function Map() {
           })
         }
       </MapView>
-      <View style={{ position: 'absolute', bottom: 50, left: 30 }}>
+      <View style={{ position: 'absolute', bottom: 0, left: 30 }}>
         <TouchableOpacity
-          style={{width: 100, height: 50, backgroundColor: 'rgba(0, 0, 0, 0.1)', justifyContent: 'center', alignItems: 'center'}}
-          onPress={() => setMapType('satellite')}
+          style={{width: 100, height: 50, backgroundColor: 'rgba(0, 0, 0, 0.1)', justifyContent: 'center', alignItems: 'center', borderRadius: 10, bottom: -50, left: -10}}
+          onPress={() => {
+            if(mapType === 'satellite'){
+              setMapType('standard')
+              setMapTypeReverse('Satellite Map Style')
+            } else {
+              setMapType('satellite')
+              setMapTypeReverse('Standard Map Style')
+            }
+          }}
         >
           <Text style={{color: 'grey', fontWeight: 'bold', textAlign: 'center'}}>
-            Satellite Map Type
+            {mapTypeReverse}
           </Text>
         </TouchableOpacity>
-      </View>
-      <View style={{ position: 'absolute', bottom: 120, left: 30 }}>
         <TouchableOpacity
-          style={{width: 100, height: 50, backgroundColor: 'rgba(0, 0, 0, 0.1)', justifyContent: 'center', alignItems: 'center'}}
-          onPress={() => setMapType('standard')}
+          style={{width: 50, height: 50, bottom: 50, backgroundColor: 'rgba(0, 0, 0, 0.1)', left: 310, alignItems: 'center', borderRadius: 10, justifyContent: 'center'}}
+          onPress={() => {
+            console.log('helo2')
+            setLatitudeDelta(latitudeDelta/10)
+            setLongitudeDelta(longitudeDelta/10)
+          }}
         >
-          <Text style={{color: 'grey', fontWeight: 'bold', textAlign: 'center'}}>
-            Standard Map Type
+          <Text style={{color: 'grey', fontWeight: 'normal', textAlign: 'center', fontSize: 40, top: -3}}>
+            +
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{width: 50, height: 50, bottom: 30, backgroundColor: 'rgba(0, 0, 0, 0.1)', left: 310, alignItems: 'center', borderRadius: 10, justifyContent: 'center'}}
+          onPress={() => {
+            console.log('helo')
+            setLatitudeDelta(latitudeDelta*10)
+            setLongitudeDelta(longitudeDelta*10)
+          }}
+        >
+          <Text style={{color: 'grey', fontWeight: 'normal', textAlign: 'center', fontSize: 40, top: -3}}>
+            -
           </Text>
         </TouchableOpacity>
       </View>

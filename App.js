@@ -24,10 +24,11 @@ const Auth = createStackNavigator({
     screen: RegisterScreen,
     navigationOptions: {
       title: 'Register',
+      headerShown: false,
       headerStyle: {
-        backgroundColor: '#307ecc',
+        backgroundColor: 'white',
       },
-      headerTintColor: '#fff',
+      headerTintColor: 'black',
     },
   },
 });

@@ -22,8 +22,8 @@ const SplashScreen = props => {
   return (
     <View style={styles.container}>
       <Image
-        source={require('../assets/ggwp.png')}
-        style={{ width: '90%', resizeMode: 'contain', margin: 30 }}
+        source={require('../assets/ggwp3.png')}
+        style={{ width: '90%', resizeMode: 'contain', margin: 30, borderRadius: 100 }}
       />
       <ActivityIndicator
         animating={animating}
