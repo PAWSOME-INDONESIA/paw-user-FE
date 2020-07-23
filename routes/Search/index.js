@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Image,
   StyleSheet,
@@ -7,8 +7,9 @@ import {
   View, ActivityIndicator, TextInput, KeyboardAvoidingView, ImageBackground, FlatList
 } from 'react-native';
 import {Container, Header, Icon, Input, Item, List, ListItem, Button, Right, Body, Left, Thumbnail} from "native-base";
-import { findUserByUsername } from '../../utils/API'
+import {findUserByUsername, getCheckFollowStatus} from '../../utils/API'
 import UserProfile from "../../components/UserProfile";
+import AsyncStorage from "@react-native-community/async-storage";
 
 export default function Search(props) {
   const [data, setData] = React.useState([])

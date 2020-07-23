@@ -20,7 +20,15 @@ import EditProfile from "../../routes/Profile/EditProfile";
 import Post from '../../routes/Profile/Post';
 import Pets from "../../routes/Profile/Pets";
 
-import {getFollowers, getFollowings, getUser, getPet, getUserPost} from "../../utils/API";
+import {
+  getFollowers,
+  getFollowings,
+  getUser,
+  getPet,
+  getUserPost,
+  getCheckFollowStatus,
+  unfollowUser, followUser
+} from "../../utils/API";
 import {translate} from '../../utils/i18n'
 import Comment from "../../components/Comment";
 import {Ionicons} from "@expo/vector-icons";
@@ -87,13 +95,16 @@ export default function UserProfile(props) {
   const [modalPost, setModalPost] = useState(false);
   const [modalFollowers, setModalFollowers] = useState(false);
   const [showComment, setShowComment] = useState(false);
-  const [userProfile, setUserProfile] = useState({});
-  const [followers, setFollowers] = useState([]);
+  const [isFollowed, setIsFollowed] = useState(false);
+  const [isFetched, setIsFetched] = useState(false);
   const [followings, setFollowings] = useState([]);
-  const [pet, setPet] = useState([]);
+  const [followers, setFollowers] = useState([]);
   const [userPost, setUserPost] = useState([]);
+  const [pet, setPet] = useState([]);
+  const [userProfile, setUserProfile] = useState({});
   const [userPostDetail, setUserPostDetail] = useState({});
   const [userPetDetail, setUserPetDetail] = useState({});
+  const [currentUser, setCurrentUser] = useState('');
   const [tabIndex, setIndex] = useState(0);
   const [routes] = useState([
     {key: 'tab1', title: 'Posts'},
@@ -104,20 +115,6 @@ export default function UserProfile(props) {
   let listOffset = useRef({});
   let isListGliding = useRef(false);
   const [loading, setLoading] = useState(false);
-
-  // useEffect(() => {
-  //   if(props.route.params && props.route.params.loadPage && props.route.params.userPost){
-  //     setLoading(true)
-  //     setIndex(0)
-  //     console.log(props.route, userPost)
-  //     setUserPost([props.route.params.userPost, ...userPost])
-  //   }
-  //   if(props.route.params && props.route.params.loadPage && props.route.params.userPet){
-  //     setLoading(true)
-  //     setIndex(1)
-  //     setPet([...pet, props.route.params.userPet])
-  //   }
-  // }, [props.route.params])
 
   useEffect(() => {
     setLoading(false)
@@ -153,7 +150,25 @@ export default function UserProfile(props) {
     getUserPost(props.uProfile.id, '').then(post => {
       setUserPost(post)
     })
+
+    AsyncStorage.getItem('@session').then(value => {
+      setCurrentUser(value)
+      getCheckFollowStatus(value, props.uProfile.id).then(follow => {
+        setIsFollowed(follow)
+        setIsFetched(true)
+      })
+    });
+
   }, [])
+
+  useEffect(() => {
+    getFollowers(props.uProfile.id).then(followers => {
+      setFollowers(followers)
+    })
+    getFollowings(props.uProfile.id).then(followings => {
+      setFollowings(followings)
+    })
+  }, [isFollowed])
 
   const onEditProfile = (value) => {
     setUserProfile(value)
@@ -241,7 +256,6 @@ export default function UserProfile(props) {
 
   const deletePet = (id) => {
     const filteredItems = pet.filter(item => item.id !== id)
-    console.log(id, filteredItems, 'helo delete pet infornt')
     setPet(filteredItems)
   }
 
@@ -296,12 +310,34 @@ export default function UserProfile(props) {
           <Text style={styles.description}>{userProfile.bio}</Text>
 
           {/*editProfile button*/}
-          <TouchableOpacity onPress={() => console.log('follow')} style={styles.editProfile}>
-            <Text style={styles.editProfileText}>Follow</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => console.log('unfollow')} style={styles.editProfile2}>
-            <Text style={styles.editProfileText}>Unfollow</Text>
-          </TouchableOpacity>
+          {isFetched && isFollowed && (
+            <TouchableOpacity onPress={() => {
+              const param = JSON.stringify({
+                "userID": props.uProfile.id,
+              })
+              unfollowUser(currentUser, param).then(res => {
+                if(res === 'success') {
+                  setIsFollowed(false)
+                }
+              })
+            }} style={styles.editProfile}>
+              <Text style={styles.editProfileText}>Unfollow</Text>
+            </TouchableOpacity>
+          )}
+          {isFetched && !isFollowed && (
+            <TouchableOpacity onPress={() => {
+              const param = JSON.stringify({
+                "userID": props.uProfile.id,
+              })
+              followUser(currentUser, param).then(res => {
+                if(res === 'success') {
+                  setIsFollowed(true)
+                }
+              })
+            }} style={styles.editProfile}>
+              <Text style={styles.editProfileText}>Follow</Text>
+            </TouchableOpacity>
+          )}
 
           <Pets
             visible={modalPet}
@@ -310,6 +346,7 @@ export default function UserProfile(props) {
             deletePet={id => deletePet(id)}
             userProfile={userProfile}
             updatePet={uPet => editPet(uPet)}
+            notEditable
           />
 
           <EditProfile open={modalVisible} editProfile={(res) => onEditProfile(res)} close={()=> toggleModalEditProfile()} userProfile={userProfile}/>
@@ -353,7 +390,6 @@ export default function UserProfile(props) {
       setUserPostDetail(item)
     }
 
-    console.log(item, 'helo item')
     return (
       <View>
         <TouchableOpacity onPress={longPress}>
@@ -562,22 +598,8 @@ const styles = StyleSheet.create({
     marginTop: 4
   },
   editProfile: {
-    width: 150,
-    left: 20,
-    marginTop: 20,
-    marginLeft: 20,
-    marginRight: 20,
-    marginBottom: 15,
-    borderRadius: 20,
-    backgroundColor: 'black',
-    justifyContent: 'center', //Centered vertically
-    alignItems: 'center', // Centered horizontally
-    height: 35
-  },
-  editProfile2: {
-    width: 150,
-    bottom: 70,
-    left: 210,
+    width: 300,
+    left: 35,
     marginTop: 20,
     marginLeft: 20,
     marginRight: 20,

@@ -6,7 +6,7 @@ import {
 import { Button, Thumbnail } from 'native-base';
 import moment from 'moment';
 import Modal from 'react-native-modal';
-import { Feather } from '@expo/vector-icons';
+import {AntDesign, Feather} from '@expo/vector-icons';
 import RBSheet from "react-native-raw-bottom-sheet";
 import {deleteUserPet, editUserPet, uploadImage} from "../../../utils/API";
 import ProgressiveImage from '../../../components/ProgressiveImage'
@@ -151,9 +151,17 @@ export default function Pets(props) {
         <KeyboardAvoidingView behavior={(Platform.OS === 'ios') ? "padding" : null} keyboardVerticalOffset={170}>
           <View style={{height: 50, backgroundColor: 'white', borderTopLeftRadius: 5, borderTopRightRadius: 5}}>
             <View style={styles.icon}>
-              <TouchableOpacity style={{left: 25, width: 100, height: 70}} onPress={() => refRBSheet.current.open()}>
-                <Feather name="more-horizontal" size={28} color="black" style={{top: 13, left: 30}}/>
-              </TouchableOpacity>
+              {!props.notEditable && (
+                <TouchableOpacity style={{left: 25, width: 100, height: 70}} onPress={() => refRBSheet.current.open()}>
+                  <Feather name="more-horizontal" size={28} color="black" style={{top: 13, left: 30}}/>
+                </TouchableOpacity>
+              )}
+
+              {props.notEditable && (
+                <TouchableOpacity style={{left: 10, width: 50, height: 70, top: 10}} onPress={() => props.onClose()}>
+                  <AntDesign name="closesquare" size={30} color="black" />
+                </TouchableOpacity>
+              )}
             </View>
             <View style={styles.icon2}>
               <Thumbnail small source={{uri: props.userProfile.imageUrl}} style={{top: -62, left: 10}}/>

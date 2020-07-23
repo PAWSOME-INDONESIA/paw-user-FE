@@ -12,7 +12,6 @@ import { Video } from 'expo-av';
 
 export default function Comment(props) {
   const [comment, setComment] = useState([])
-  const [commentId, setCommentId] = useState('')
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [refreshing, setRefreshing] = useState(false)
@@ -21,8 +20,6 @@ export default function Comment(props) {
   const [lastId, setLastId] = useState('')
   const [text, setText] = useState('')
   const [disable, setDisabled] = useState(true)
-
-  console.log(props, 'helo comment props')
 
   useEffect(() => {
     loadComment()
@@ -38,7 +35,7 @@ export default function Comment(props) {
       return null
     }
 
-    const response = await fetch(`https://paw-user-yej2q77qka-an.a.run.app/comment/by-post?postID=${props.feedDetail.post.id}&lastID=${lastId}&limit=5`, {
+    const response = await fetch(`https://paw-user-yej2q77qka-an.a.run.app/comment/by-post?postID=${props.feedDetail.post.id}&lastID=${lastId}&limit=10`, {
       method: 'get',
       headers: new Headers({
         'Content-Type': 'application/x-www-form-urlencoded'
@@ -143,28 +140,31 @@ export default function Comment(props) {
     </TouchableWithoutFeedback>
   );
 
-  console.log(props.feedDetail, 'helo feed')
-
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={{left: 10, top: 10}} onPress={props.closeComment}>
+      <TouchableOpacity style={{left: 10, top: 10}} onPress={() => {
+        props.closeComment()
+        setLastPage(false)
+        setLastId('')
+      }}>
         <Ionicons name="ios-arrow-back" size={30} color="blue" />
+        <Text style={{left: 20, bottom: 27, fontWeight: 'bold'}}>Back</Text>
       </TouchableOpacity>
-      {props.feedDetail.post.type === 'image' && (
-        <Image source={{uri: props.feedDetail.post.imageUrl}} style={{height: 300, marginTop: 10, resizeMode: 'contain'}}/>
-      )}
-      {props.feedDetail.post.type === 'video' && (
-        <Video
-          source={{ uri: props.feedDetail.post.imageUrl }}
-          rate={1.0}
-          volume={0}
-          isMuted={false}
-          resizeMode="cover"
-          shouldPlay={true}
-          isLooping
-          style={{height: 300, marginTop: 10}}
-        />
-      )}
+      {/*{props.feedDetail.post.type === 'image' && (*/}
+      {/*  <Image source={{uri: props.feedDetail.post.imageUrl}} style={{height: 300, marginTop: 10, resizeMode: 'contain'}}/>*/}
+      {/*)}*/}
+      {/*{props.feedDetail.post.type === 'video' && (*/}
+      {/*  <Video*/}
+      {/*    source={{ uri: props.feedDetail.post.imageUrl }}*/}
+      {/*    rate={1.0}*/}
+      {/*    volume={0}*/}
+      {/*    isMuted={false}*/}
+      {/*    resizeMode="cover"*/}
+      {/*    shouldPlay={true}*/}
+      {/*    isLooping*/}
+      {/*    style={{height: 300, marginTop: 10}}*/}
+      {/*  />*/}
+      {/*)}*/}
       {/*<View style={styles.head}/>*/}
         <KeyboardAvoidingView behavior={(Platform.OS === 'ios') ? "padding" : null} style={styles.form} keyboardVerticalOffset={100}>
           <FlatList
@@ -224,6 +224,8 @@ const styles = StyleSheet.create({
   form: {
     flex: 1,
     justifyContent: 'space-between',
+    borderTopWidth: 0.3,
+    borderTopColor: 'grey'
   },
   nameInput: {
     height: offset * 2,

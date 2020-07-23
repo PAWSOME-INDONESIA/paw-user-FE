@@ -8,7 +8,6 @@ import { createDrawerNavigator } from 'react-navigation-drawer';
 //Import External Screens
 import HomeScreen from './drawerScreens/HomeScreen';
 import SettingsScreen from './drawerScreens/SettingsScreen';
-import PetScreen from "./drawerScreens/PetScreen";
 import PetEncyclopediaScreen from "./drawerScreens/PetEncyclopediaScreen";
 
 //Import Drawer
@@ -33,7 +32,7 @@ const SecondActivity_StackNavigator = createStackNavigator({
   First: {
     screen: SettingsScreen,
     navigationOptions: ({ navigation }) => ({
-      title: 'Setting Screen',
+      title: 'Settings',
       headerLeft: () => <NavigationDrawerHeader navigationProps={navigation} />,
       headerStyle: {
         backgroundColor: '#307ecc',
@@ -44,20 +43,6 @@ const SecondActivity_StackNavigator = createStackNavigator({
 });
 
 const ThirdActivity_StackNavigator = createStackNavigator({
-  First: {
-    screen: PetScreen,
-    navigationOptions: ({ navigation }) => ({
-      title: 'Pet Screen',
-      headerLeft: () => <NavigationDrawerHeader navigationProps={navigation} />,
-      headerStyle: {
-        backgroundColor: '#307ecc',
-      },
-      headerTintColor: '#fff',
-    }),
-  },
-});
-
-const FourthActivity_StackNavigator = createStackNavigator({
   First: {
     screen: PetEncyclopediaScreen,
     navigationOptions: ({ navigation }) => ({
@@ -82,17 +67,11 @@ const DrawerNavigatorRoutes = createDrawerNavigator(
     SettingsScreen: {
       screen: SecondActivity_StackNavigator,
       navigationOptions: {
-        drawerLabel: 'Setting Screen',
-      },
-    },
-    PetScreen: {
-      screen: ThirdActivity_StackNavigator,
-      navigationOptions: {
-        drawerLabel: 'Pet Screen',
+        drawerLabel: 'Settings Screen',
       },
     },
     PetEncyclopediaScreen: {
-      screen: FourthActivity_StackNavigator,
+      screen: ThirdActivity_StackNavigator,
       navigationOptions: {
         drawerLabel: 'Pet Encyclopedia',
       },

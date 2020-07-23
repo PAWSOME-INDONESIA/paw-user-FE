@@ -8,10 +8,10 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Video } from 'expo-av';
-import { Button, DatePicker } from 'native-base';
+import { Button, DatePicker, Picker, Item } from 'native-base';
 import {uploadImage, postUserPost, postPet} from "../../utils/API";
 import AsyncStorage from "@react-native-community/async-storage";
-import { MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import isEmpty from "lodash/isEmpty";
 import moment from "moment";
 
@@ -22,6 +22,7 @@ export default function Post(props) {
   const [fd, setFd] = React.useState('');
   const [bday, setBday] = React.useState('');
   const [fileType, setFileType] = React.useState('');
+  const [selectedItem, setSelectedItem] = React.useState('Dogs');
   const [shouldPlay, setShouldPlay] = React.useState(true);
   const [uploading, setUploading] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState(false);
@@ -180,6 +181,7 @@ export default function Post(props) {
               "imageUrl": val.image_url,
               "userID": userId,
               "name": caption,
+              "breed": selectedItem,
               "birthDate": moment(bday).format('YYYY-MM-DD')
             })
             postPet(param).then(res => {
@@ -233,13 +235,13 @@ export default function Post(props) {
             ) : (
               <Image source={{ uri: selectedImage.localUri }} style={styles.thumbnail} />
             )}
-            <TouchableOpacity onPress={() => setSelectedImage(null)} style={styles.button2}>
-              <Text style={styles.buttonText2}>Remove Image</Text>
+            <TouchableOpacity onPress={() => setSelectedImage(null)} style={{bottom: 50, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent:'center',borderRadius: 30, alignItems: 'center'}}>
+              <Text style={{width: 200, height: 50, color: 'white', fontWeight: 'bold', textAlign: 'center', marginTop: 20, fontSize: 17}}>Remove Image</Text>
             </TouchableOpacity>
             <TextInput
               style={styles.captionText}
               onChangeText={caps => setCaption(caps)}
-              underlineColorAndroid="grey"
+              underlineColorAndroid="white"
               placeholder="Write a caption..."
               placeholderTextColor="grey"
               maxLength={100}
@@ -271,7 +273,7 @@ export default function Post(props) {
   if (selectedImage2 !== null) {
     return (
       <KeyboardAvoidingView keyboardVerticalOffset={100} behavior='position'>
-        <ScrollView>
+        <ScrollView >
           <View style={styles.container}>
             <Image source={{ uri: selectedImage2.localUri }} style={styles.thumbnail2} />
             <TouchableOpacity onPress={() => setSelectedImage2(null)} style={styles.button5}>
@@ -284,9 +286,9 @@ export default function Post(props) {
               <TextInput
                 style={styles.captionText2}
                 onChangeText={caps => setCaption(caps)}
-                underlineColorAndroid="grey"
-                placeholder="Your Pet Name..."
-                placeholderTextColor="grey"
+                underlineColorAndroid="white"
+                placeholder="Your Pet Name"
+                placeholderTextColor="lightgray"
                 blurOnSubmit={false}
               />
             </View>
@@ -328,6 +330,24 @@ export default function Post(props) {
                 </Text>
               )
             }
+            <View style={styles.nameContainer}>
+              <Text style={{top: 10, right: 25, width: 80}}>
+                Breed :
+              </Text>
+              <Picker
+                mode="dropdown"
+                iosIcon={<Ionicons name="ios-arrow-down" size={24} color="black" />}
+                style={{ width: 140, right: 28 }}
+                placeholder="Select Breed"
+                placeholderStyle={{ color: "#d3d3d3" }}
+                placeholderIconColor="#007aff"
+                selectedValue={selectedItem}
+                onValueChange={res => setSelectedItem(res)}
+              >
+                <Picker.Item label="Dogs" value="Dogs" />
+                <Picker.Item label="Cats" value="Cats" />
+              </Picker>
+            </View>
             <TouchableOpacity
               disabled={errorMsg2}
               onPress={() => {
@@ -335,7 +355,7 @@ export default function Post(props) {
               }}
               style={errorMsg2 ? styles.disabled : styles.button3}
             >
-              <Text style={styles.buttonText3}>Add Pet!</Text>
+              <Text style={styles.buttonText3}>Add Pet</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -345,17 +365,24 @@ export default function Post(props) {
 
   const showContent = (type) => {
     return(
-      <ImageBackground source={{uri: 'https://i.pinimg.com/originals/02/ed/60/02ed60be51ca5db46a35c770baf5e067.png'}}
-                         style={styles.container}>
-        <TouchableOpacity onPress={() => openImagePickerAsync(type)} style={styles.button}>
-          <Text style={styles.buttonText}>Choose a photo</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => launchCamera(type)} style={styles.button}>
-          <Text style={styles.buttonText}>Launch Camera</Text>
-        </TouchableOpacity>
+      <ImageBackground source={{uri: 'https://i.pinimg.com/originals/07/5a/ce/075acecf8dba7404478d329bdbde6e2b.jpg'}}
+                       style={{width: '100%', height: '100%'}}>
+        <View style={styles.chooseContainer}>
+          <TouchableOpacity onPress={() => openImagePickerAsync(type)}>
+            <Text style={styles.buttonText}>Open Gallery</Text>
+            <Image
+              style={{width: 200, height: 200}}
+              source={{uri: 'https://cdn0.iconfinder.com/data/icons/apple-apps/100/Apple_Photos-512.png'}} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => launchCamera(type)}>
+            <Text style={styles.buttonText}>Launch Camera</Text>
+            <Image
+              style={{width: 200, height: 200}}
+              source={{uri: 'https://images-eu.ssl-images-amazon.com/images/I/41WojpNRS5L.png'}} />
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity onPress={back} style={styles.button4}>
-          <Text style={styles.buttonText}>Back</Text>
+          <Text style={{color: 'white', fontSize: 20, textAlign: 'center'}}>{`Back`}</Text>
         </TouchableOpacity>
       </ImageBackground>
     )
@@ -374,7 +401,7 @@ export default function Post(props) {
   }
 
   return (
-    <ImageBackground source={{uri: 'https://i.pinimg.com/originals/02/ed/60/02ed60be51ca5db46a35c770baf5e067.png'}}
+    <ImageBackground source={{uri: 'https://i.pinimg.com/originals/07/5a/ce/075acecf8dba7404478d329bdbde6e2b.jpg'}}
            style={{width: '100%', height: '100%'}}>
       <View style={styles.chooseContainer}>
         <Button style={styles.choose} onPress={() => setFuncAddPost(true)}>
@@ -402,31 +429,25 @@ const styles = StyleSheet.create({
     height: 159,
     marginBottom: 20,
   },
-  button: {
-    backgroundColor: 'blue',
-    padding: 20,
-    marginTop: 20,
-    width: '90%',
-    borderRadius: 5,
-  },
   button2: {
     backgroundColor: '#e75522',
     padding: 10,
-    marginTop: 20,
+    marginTop: 10,
     width: '100%',
     top: -25
   },
   button3: {
-    backgroundColor: 'blue',
+    backgroundColor: '#2e72c4',
     padding: 10,
     marginTop: 20,
     width: '100%',
     bottom: 0
   },
   button4: {
-    backgroundColor: 'red',
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
     padding: 20,
-    marginTop: 20,
+    top: -150,
+    left: 150,
     width: '30%',
     borderRadius: 5,
   },
@@ -440,7 +461,8 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 20,
-    color: '#ffffff',
+    color: 'black',
+    fontWeight: 'bold',
     textAlign: 'center'
   },
   buttonText2: {
@@ -477,12 +499,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#e3eff5',
   },
   captionText2: {
+    fontSize: 16,
     paddingLeft: 10,
     justifyContent: 'center',
     color: 'black',
     width: '50%',
     height: 40,
-    backgroundColor: '#e3eff5',
+    backgroundColor: 'white',
   },
   disabled: {
     backgroundColor: 'grey',

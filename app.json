@@ -26,7 +26,6 @@
       "bundleIdentifier": "com.pawsomeindonesia.pawsome",
       "buildNumber": "1.0.0"
     },
-    "sdkVersion": "37.0.0",
     "android": {
       "package": "com.pawsomeindonesia.pawsome",
       "versionCode": 1,

@@ -116,6 +116,7 @@ export default function Profile(props) {
       setIndex(1)
       setPet([...pet, props.route.params.userPet])
     }
+    updateProfile()
   }, [props.route.params])
 
   useEffect(() => {
@@ -136,7 +137,7 @@ export default function Profile(props) {
     };
   }, [routes, tabIndex]);
 
-  useEffect(() => {
+  const updateProfile = () => {
     AsyncStorage.getItem('@session').then(res => {
       getUser(res).then(usr => {
         setUserProfile(usr)
@@ -154,6 +155,10 @@ export default function Profile(props) {
         setUserPost(post)
       })
     })
+  }
+
+  useEffect(() => {
+    updateProfile()
   }, [])
 
   const onEditProfile = (value) => {
@@ -347,7 +352,6 @@ export default function Profile(props) {
       setUserPostDetail(item)
     }
 
-    console.log(item, 'helo item')
     return (
       <View>
         <TouchableOpacity onPress={longPress}>

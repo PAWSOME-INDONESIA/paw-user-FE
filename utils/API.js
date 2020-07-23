@@ -8,7 +8,7 @@ const userUrl = "https://paw-user-yej2q77qka-an.a.run.app"
 const imageUrl = "https://paw-image-yej2q77qka-an.a.run.app/image/upload"
 
 // USER
-  export const doLogin = (body) => {
+export const doLogin = (body) => {
     const login  = fetch(userUrl + '/user/login', {
         method: 'POST',
         headers: myHeaders,
@@ -87,6 +87,27 @@ export const getUser = (id) => {
     .catch(error => console.log('error', error));
 
   return user
+}
+export const getForgetPassword = (email) => {
+  let value = email;
+  value = value.replace(/^"|"$/g, '');
+
+  const forget  = fetch(userUrl + `/user/forget-password/${value}`, {
+    method: 'GET',
+    headers: myHeaders,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return 'success'
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return forget
 }
 export const findUserByUsername = (id) => {
   let value = id;
@@ -181,6 +202,26 @@ export const getFollowings = (id) => {
 
   return followings
 }
+export const getCheckFollowStatus = (userId, followingId) => {
+  let value = userId;
+  value = value.replace(/^"|"$/g, '');
+  const checking  = fetch(userUrl + `/user/check-follow-status?userID=${value}&followingID=${followingId}`, {
+    method: 'GET',
+    headers: myHeaders,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return result.data.isFollowed
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return checking
+}
 export const checkUsernameUnique = (username) => {
   let value = username;
   value = value.replace(/^"|"$/g, '');
@@ -230,6 +271,73 @@ export const checkEmailUnique = (email) => {
     .catch(error => console.log('error', error));
 
   return followings
+}
+export const unfollowUser = (userId, body) => {
+  let value = userId;
+  value = value.replace(/^"|"$/g, '');
+
+  const unfolo  = fetch(userUrl + `/user/${value}/unfollow`, {
+    method: 'DELETE',
+    headers: myHeaders,
+    body: body,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return 'success'
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return unfolo
+}
+export const followUser = (userId, body) => {
+  let value = userId;
+  value = value.replace(/^"|"$/g, '');
+
+  const folo  = fetch(userUrl + `/user/${value}/follow`, {
+    method: 'POST',
+    headers: myHeaders,
+    body: body,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return 'success'
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return folo
+}
+export const changePassword = (body) => {
+  const changePass  = fetch(userUrl + '/user/change-password', {
+    method: 'PUT',
+    headers: myHeaders,
+    body: body,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success){
+        return 'success'
+      } else {
+        if(result.error === 'INVALID_CREDENTIAL'){
+          return 'Password Mismatched'
+        } else {
+          return 'Failed to change password, please try again'
+        }
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return changePass
 }
 
 // POST
@@ -560,4 +668,28 @@ export const editUserPet = (text, petId) => {
     .catch(error => console.log('error', error));
 
   return userPet
+}
+
+// PET ENCYCLOPEDIA
+export const getPetEncyclopedia = (category) => {
+
+  const petEncyc  = fetch(userUrl + `/encyclopedia?category=${category}`, {
+    method: 'GET',
+    headers: myHeaders,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        if(result.data.encyclopedias === null){
+          return []
+        }
+        return result.data.encyclopedias
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return petEncyc
 }

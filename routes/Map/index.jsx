@@ -19,7 +19,7 @@ export default function Map() {
     const intervalId = setInterval(() => {
       AsyncStorage.getItem('@session').then(res => {
         getPet(res, 'true').then(pet => {
-          console.log(pet, 'helo dum')
+          // console.log(pet, 'helo dum')
           if(pet === 'failed'){
             return
           }

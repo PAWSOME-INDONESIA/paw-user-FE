@@ -14,16 +14,12 @@ const CustomSidebarMenu = props => {
       screenToNavigate: 'HomeScreen',
     },
     {
-      navOptionName: 'Setting',
-      screenToNavigate: 'SettingsScreen',
-    },
-    {
-      navOptionName: 'Pets',
-      screenToNavigate: 'PetScreen',
-    },
-    {
       navOptionName: 'Pet Encyclopedia',
       screenToNavigate: 'PetEncyclopediaScreen',
+    },
+    {
+      navOptionName: 'Settings',
+      screenToNavigate: 'SettingsScreen',
     },
     {
       navOptionName: 'Logout',
