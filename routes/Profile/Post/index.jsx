@@ -7,14 +7,17 @@ import {
 import { Button, Thumbnail } from 'native-base';
 import Modal from 'react-native-modal';
 import { Feather } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
 import RBSheet from "react-native-raw-bottom-sheet";
 import { deleteUserPost, getPostLikeCounter, editUserPost } from "../../../utils/API";
 import ProgressiveImage from '../../../components/ProgressiveImage'
+import moment from "moment";
+import { Video } from 'expo-av';
 
 export default function Post(props) {
   const refRBSheet = useRef();
   const [likesCount, setLikesCount] = useState(0);
-  const [listUserLikes, setListUserLikes] = useState([]);
+  const [commentSection, setCommentSection] = useState(false);
   const [editMsg, setEditMsg] = useState('');
   const [tempEditMsg, setTempEditMsg] = useState('');
   const [onEdit, setOnEdit] = useState(false);
@@ -29,6 +32,10 @@ export default function Post(props) {
     setEditMsg(props.post.caption)
     setTempEditMsg(props.post.caption)
   }, [props.post.caption])
+
+  useEffect(() => {
+    setOnEdit(false)
+  },[props.visible])
 
   const deletePost = () => {
     Alert.alert(
@@ -92,26 +99,43 @@ export default function Post(props) {
         <KeyboardAvoidingView behavior={(Platform.OS === 'ios') ? "padding" : null} keyboardVerticalOffset={170}>
         <View style={{height: 50, backgroundColor: 'white', borderTopLeftRadius: 5, borderTopRightRadius: 5}}>
           <View style={styles.icon}>
+            {!props.notEditable && (
               <TouchableOpacity style={{left: 25, width: 100, height: 70}} onPress={() => refRBSheet.current.open()}>
                 <Feather name="more-horizontal" size={28} color="black" style={{top: 13, left: 30}}/>
               </TouchableOpacity>
+            )}
+            {props.notEditable && (
+              <TouchableOpacity style={{left: 5, width: 50, height: 70, top: 10}} onPress={() => props.onClose()}>
+                <AntDesign name="closesquare" size={30} color="black" />
+              </TouchableOpacity>
+            )}
           </View>
           <View style={styles.icon2}>
             <Thumbnail small source={{uri: props.userProfile.imageUrl}} style={{top: -62, left: 10}}/>
             <Text style={{top: -52, left: 30, fontWeight: 'bold'}}>{props.userProfile.username}</Text>
           </View>
         </View>
-        <ProgressiveImage
-          thumbnailSource={{ uri: props.post.imageUrl }}
-          source={{ uri: props.post.imageUrl }}
-          style={styles.image}
-          resizeMode="cover"
-        />
-        {/*<View style={styles.box}>*/}
-        {/*  <Text>*/}
-        {/*    Icon ikes*/}
-        {/*  </Text>*/}
-        {/*</View>*/}
+          {props.post.type === 'video' && (
+            <Video
+              source={{ uri: props.post.imageUrl }}
+              rate={1.0}
+              volume={0}
+              isMuted={false}
+              resizeMode="cover"
+              shouldPlay={true}
+              isLooping
+              style={[styles.image, styles.video]}
+            />
+          )}
+
+          {props.post.type === 'image' && (
+            <ProgressiveImage
+              thumbnailSource={{ uri: props.post.imageUrl }}
+              source={{ uri: props.post.imageUrl }}
+              style={styles.image}
+              resizeMode="cover"
+            />
+          )}
         <View style={styles.caption}>
           <Text style={{paddingLeft: 10, marginTop: 10, fontWeight: "700", color: 'red'}}>
             {`${likesCount || 0} likes`}
@@ -141,6 +165,13 @@ export default function Post(props) {
               </Text>
               {editMsg}
             </Text>)}
+          {!onEdit && (
+            <TouchableOpacity onPress={() => props.showComment()}>
+              <Text style={{color: 'gray', marginTop: 10, marginLeft: 15}}>
+                View all 4 comments
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
           <RBSheet
             ref={refRBSheet}
@@ -167,6 +198,9 @@ export default function Post(props) {
               </Button>
             </View>
           </RBSheet>
+          <Text style={{fontSize: 11, color: '#a4a4a7', bottom: 30, left: 10, fontWeight: 'bold'}}>
+            {moment(props.post.created_at).fromNow()}
+          </Text>
         </KeyboardAvoidingView>
       </View>
     </Modal>
@@ -202,4 +236,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-start",
   },
+  video: {
+    backgroundColor: 'white'
+  }
 });

@@ -31,16 +31,13 @@ export default function Search(props) {
 
   if(openUserProfile){
     return(
-      <UserProfile uProfile={uProfile}/>
+      <UserProfile uProfile={uProfile} closeUProfile={() => setOpenUserProfile(false)}/>
     )
   }
 
   const renderList = ({item, index}) => {
     return (
-      <ListItem thumbnail style={{marginTop: 10}} onPress={() => {
-        setOpenUserProfile(true)
-        setUProfile(item)
-      }}>
+      <ListItem thumbnail style={{marginTop: 10}}>
         <Left>
           <Thumbnail circular source={{ uri: item.imageUrl }} />
         </Left>
@@ -49,8 +46,11 @@ export default function Search(props) {
           <Text note numberOfLines={1}  style={{color: 'grey', fontSize: 10, marginTop: 5}}>{item.bio}</Text>
         </Body>
         <Right>
-          <Button transparent>
-            <Text style={{color: 'blue'}}>View</Text>
+          <Button transparent onPress={() => {
+            setOpenUserProfile(true)
+            setUProfile(item)
+          }}>
+            <Text style={{color: '#000080'}}>View</Text>
           </Button>
         </Right>
       </ListItem>

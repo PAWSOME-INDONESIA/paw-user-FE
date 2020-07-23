@@ -1,35 +1,80 @@
 import React, {useEffect, useState, useRef} from 'react';
 import {
-  StyleSheet, View, Image,
-  Dimensions, Text, TextInput,
+  StyleSheet, View, Text, TextInput,
   TouchableOpacity, Alert, KeyboardAvoidingView, Platform
 } from 'react-native';
 import { Button, Thumbnail } from 'native-base';
+import moment from 'moment';
 import Modal from 'react-native-modal';
 import { Feather } from '@expo/vector-icons';
 import RBSheet from "react-native-raw-bottom-sheet";
-import { deleteUserPet, getPostLikeCounter, editUserPost } from "../../../utils/API";
+import {deleteUserPet, editUserPet, uploadImage} from "../../../utils/API";
 import ProgressiveImage from '../../../components/ProgressiveImage'
-import moment from 'moment';
+import DatePicker from "react-native-datepicker";
+import * as ImagePicker from "expo-image-picker";
+import Loader from "../../../Screen/Components/Loader";
 
 export default function Pets(props) {
   const refRBSheet = useRef();
-  const [likesCount, setLikesCount] = useState(0);
-  const [listUserLikes, setListUserLikes] = useState([]);
+  const [updatedAt, setUpdatedAt] = useState('');
+  const [petName, setPetName] = useState('');
   const [editMsg, setEditMsg] = useState('');
-  const [tempEditMsg, setTempEditMsg] = useState('');
+  const [date, setDate] = useState(moment(props.pet.birthDate).format('YYYY-MM-DD'));
+  const [locationUrl, setLocationUrl] = useState('');
   const [onEdit, setOnEdit] = useState(false);
+  const [imageUrl, setImageUrl] = useState(props.pet.imageUrl);
+  const [uploading, setUploading] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
-    getPostLikeCounter(`${props.pet.id}`).then(res => {
-      setLikesCount(res.likesCount)
-    })
-  },[])
+    setDate(moment(props.pet.birthDate).format('YYYY-MM-DD'))
+    setImageUrl(props.pet.imageUrl)
+    setPetName(props.pet.name)
+    setLocationUrl(props.pet.locationUrl)
+    setUpdatedAt(props.pet.updated_at)
+  }, [props.pet])
 
-  // useEffect(() => {
-  //   setEditMsg(props.post.caption)
-  //   setTempEditMsg(props.post.caption)
-  // }, [props.post.caption])
+  useEffect(() => {
+    setOnEdit(false)
+  },[props.visible])
+
+  const changePetImage = async () => {
+
+    let permissionResult = await ImagePicker.requestCameraRollPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      alert('Permission to access camera roll is required!');
+      return;
+    }
+
+    let pickerResult = await ImagePicker.launchImageLibraryAsync();
+    if (pickerResult.cancelled === true) {
+      return;
+    }
+
+    let localUri = pickerResult.uri;
+    let filename = localUri.split('/').pop();
+
+    // Infer the type of the image
+    let match = /\.(\w+)$/.exec(filename);
+    let type = match ? `image/${match[1]}` : `image`;
+
+    // Upload the image using the fetch and FormData APIs
+    let formData = new FormData();
+    // Assume "photo" is the name of the form field the server expects
+    formData.append('image', { uri: localUri, name: filename, type });
+
+    setUploading(true)
+    uploadImage(formData).then(val => {
+      if(val.image_url){
+        setImageUrl(`${val.image_url}`)
+        setUploading(false)
+        alert('image uploaded!')
+      }
+    })
+
+    setSelectedImage({localUri: pickerResult.uri});
+  };
 
   const deletePet = () => {
     Alert.alert(
@@ -69,24 +114,30 @@ export default function Pets(props) {
 
   const saveMsg = () => {
     const param = JSON.stringify({
-      "caption": editMsg,
+      "name": petName,
+      "birthDate": date,
+      "imageUrl": imageUrl,
+      "locationUrl": locationUrl
     })
-    editUserPost(param, props.post.id).then(res => {
 
+    editUserPet(param, props.pet.id).then(res => {
+      console.log(res, 'helo param')
       if(res === 'failed') {
-        alert('failed to update caption')
+        setPetName(props.pet.name)
+        setDate(props.pet.birthDate)
+        alert('failed to update pet data')
         setOnEdit(false)
         return
       }
       setOnEdit(false)
+      setUpdatedAt(res.updated_at)
       setEditMsg(editMsg)
+      props.updatePet(res)
     })
   }
 
-  const a = moment([props.pet.birthDate]);
+  const a = moment([date]);
   const b = moment();
-
-  console.log('date', props.pet)
 
   return (
     <Modal
@@ -96,6 +147,7 @@ export default function Pets(props) {
       swipeDirection={['down']}
     >
       <View>
+        <Loader loading={uploading} />
         <KeyboardAvoidingView behavior={(Platform.OS === 'ios') ? "padding" : null} keyboardVerticalOffset={170}>
           <View style={{height: 50, backgroundColor: 'white', borderTopLeftRadius: 5, borderTopRightRadius: 5}}>
             <View style={styles.icon}>
@@ -108,33 +160,88 @@ export default function Pets(props) {
               <Text style={{top: -52, left: 30, fontWeight: 'bold'}}>{props.userProfile.username}</Text>
             </View>
           </View>
-          <ProgressiveImage
-            thumbnailSource={{ uri: props.pet.imageUrl }}
-            source={{ uri: props.pet.imageUrl }}
-            style={styles.image}
-            resizeMode="cover"
-          />
+          {selectedImage === null ? (
+            <ProgressiveImage
+              thumbnailSource={{ uri: props.pet.imageUrl }}
+              source={{ uri: props.pet.imageUrl }}
+              style={styles.image}
+              resizeMode="cover"
+            />
+          ) : (
+            <ProgressiveImage
+              thumbnailSource={{ uri: props.pet.imageUrl }}
+              source={{ uri: selectedImage.localUri }}
+              style={styles.image}
+              resizeMode="cover"
+            />
+          )}
           <View style={styles.caption}>
-            <Text style={{paddingLeft: 10, marginTop: 10, fontSize: 30, fontWeight: "700", color: 'white', top: -60, width: 200, backgroundColor: 'black'}}>
-              {`${props.pet.name}  `}
-              <Text style={{fontSize: 20, fontWeight: 'bold', color: 'white'}}>
-                {b.diff(a, 'years')} y/o
-              </Text>
-            </Text>
+            {!onEdit && (
+              <Text style={{paddingLeft: 10, marginTop: 10, fontSize: 24, fontWeight: "700", color: 'white', width: 230, backgroundColor: 'black'}}>
+                {`${petName}  `}
+                <Text style={{fontSize: 15, fontWeight: 'bold', color: 'white'}}>
+                  {b.diff(a, 'years')} y/o
+                </Text>
+              </Text>)}
+
+            {onEdit && (
+              <View style={{flexDirection: 'row', top: 30}}>
+                <Text style={{fontWeight: 'bold', paddingLeft: 20}}>
+                  {`Name: `}
+                </Text>
+                <TextInput value={petName} style={styles.nameBox} onChangeText={txt => setPetName(txt)}/>
+              </View>
+            )}
             {onEdit ? (
-              <View style={{flexDirection: 'row', height: 40, marginLeft: 10}}>
-                <View style={{marginTop: 10, width: '95%'}}>
-                  <TextInput value={editMsg} onChangeText={(val) => setEditMsg(val)}/>
+              <View style={{flexDirection: 'row', height: 40, marginLeft: 10, top: 50}}>
+                <Text style={{fontWeight: 'bold', paddingLeft: 10}}>
+                  {`Date of Birth: `}
+                </Text>
+                <View style={styles.editProfileRow}>
+                  <DatePicker
+                    style={{width: 217}}
+                    mode="date"
+                    date={date}
+                    placeholder="Select date"
+                    format="YYYY-MM-DD"
+                    minDate="1950-05-01"
+                    maxDate="2021-05-01"
+                    confirmBtnText="Confirm"
+                    cancelBtnText="Cancel"
+                    customStyles={{
+                      dateIcon: {
+                        position: 'absolute',
+                        right: -5,
+                        top: 4,
+                        marginRight: 0
+                      },
+                      dateInput: {
+                        marginRight: 34,
+                        marginLeft: 30
+                      },
+                      btnTextCancel: {
+                        color: 'white'
+                      },
+                      btnTextConfirm: {
+                        color: '#32CD32'
+                      },
+                      datePickerCon: {
+                        backgroundColor: 'rgba(0,0,0,0.9)'
+                      }
+                    }}
+                    onDateChange={(birthDate) => setDate(birthDate)}
+                  />
                 </View>
                 <TouchableOpacity onPress={() => {
                   setOnEdit(false)
-                  setEditMsg(tempEditMsg)
-                }} style={{width: 60, height: 40, right: 330, top: 35, justifyContent: 'center', alignItems: 'center'}}>
+                  setPetName(props.pet.name)
+                  setDate(moment(props.pet.birthDate).format('YYYY-MM-DD'))
+                }} style={{width: 60, height: 40, right: 310, top: 50, justifyContent: 'center', alignItems: 'center'}}>
                   <Text style={{color: 'red'}} >
                     cancel
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => saveMsg()} style={{width: 60,height: 40, top: 35, left: -120, justifyContent: 'center', alignItems: 'center'}}>
+                <TouchableOpacity onPress={() => saveMsg()} style={{width: 60,height: 40, right: 100, top: 50, justifyContent: 'center', alignItems: 'center'}}>
                   <Text style={{color: 'green'}} >
                     save
                   </Text>
@@ -142,11 +249,23 @@ export default function Pets(props) {
               </View>) : (
               <Text style={{paddingLeft: 10, marginTop: 10}}>
                 <Text style={{fontWeight: '600'}}>
-                  {props.userProfile.username + "  "}
+                  {"Date of Birth : " + moment(date).format('DD MMM YYYY')}
                 </Text>
                 {editMsg}
               </Text>)}
+            {!onEdit &&
+            (
+              <Text style={{fontSize: 11, color: '#a4a4a7', bottom: -80, left: 10, fontWeight: 'bold'}}>
+                {"Last Updated at : " + moment(updatedAt).fromNow()}
+              </Text>
+            )}
           </View>
+          {onEdit && (
+            <TouchableOpacity
+              style={styles.changeImageButton} onPress={() => changePetImage()}>
+              <Text style={{fontWeight: 'bold', color: 'white'}}> Change Image</Text>
+            </TouchableOpacity>
+          )}
           <RBSheet
             ref={refRBSheet}
             closeOnDragDown={true}
@@ -190,7 +309,7 @@ const styles = StyleSheet.create({
     aspectRatio: 1
   },
   caption: {
-    height: 180,
+    height: 200,
     backgroundColor: 'white',
     borderBottomLeftRadius: 5,
     borderBottomRightRadius: 5,
@@ -207,4 +326,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-start",
   },
+  editProfileRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    top: -10
+  },
+  changeImageButton: {
+    left: 120,
+    width: 130,
+    height: 50,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    bottom: 270,
+    borderRadius: 50
+  },
+  nameBox: {
+    borderWidth: 1,
+    width: 150,
+    height: 39,
+    top: -10,
+    left: 78,
+    borderColor: 'grey',
+    justifyContent: 'center',
+    textAlign: 'center'
+  }
 });

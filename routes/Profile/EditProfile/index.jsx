@@ -50,6 +50,8 @@ export default function EditProfile(props) {
         "imageUrl": imageUrl
       })
 
+      console.log(param, 'helo')
+
       editUser(props.userProfile.id, param).then(res => {
         if(res !== 'failed'){
           setSaving(false)
@@ -251,7 +253,7 @@ export default function EditProfile(props) {
                             color: '#32CD32'
                           },
                           datePickerCon: {
-                            backgroundColor: '#666666'
+                            backgroundColor: 'rgba(0,0,0,0.9)'
                           }
                         }}
                         onDateChange={(birthDate) => onChangeDate(birthDate)}

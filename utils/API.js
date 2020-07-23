@@ -6,7 +6,6 @@ myHeaders2.append("Content-Type", "multipart/form-data");
 
 const userUrl = "https://paw-user-yej2q77qka-an.a.run.app"
 const imageUrl = "https://paw-image-yej2q77qka-an.a.run.app/image/upload"
-const emailUrl = "https://paw-mail-yej2q77qka-an.a.run.app"
 
 // USER
   export const doLogin = (body) => {
@@ -255,6 +254,27 @@ export const getUserPost = (id, lastID) => {
 
   return userPost
 }
+export const getUserHomeFeed = (id, lastID) => {
+  let value = id;
+  value = value.replace(/^"|"$/g, '');
+
+  const homeFeed  = fetch(userUrl + `/post/following?userID=${value}&lastID=${lastID}&limit=5`, {
+    method: 'GET',
+    headers: myHeaders,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return result.data
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return homeFeed
+}
 export const deleteUserPost = (postId) => {
   let value = postId;
   value = value.replace(/^"|"$/g, '');
@@ -337,19 +357,19 @@ export const getCommentCount = (postId) => {
 
   return commentCount
 }
-export const getCommentText = (postId, lastId) => {
-  let value = postId;
+export const deleteComment = (commentId) => {
+  let value = commentId;
   value = value.replace(/^"|"$/g, '');
 
-  const commentText  = fetch(userUrl + `/comment/by-post?postID=${value}&lastID=${lastId}&limit=5`, {
-    method: 'GET',
+  const commentText  = fetch(userUrl + `/comment/${value}`, {
+    method: 'DELETE',
     headers: myHeaders,
     redirect: 'follow'
   })
     .then(response => response.json())
     .then(result => {
       if(result.success === true){
-        return result.data.comments
+        return 'success'
       } else {
         return 'failed'
       }
@@ -358,26 +378,24 @@ export const getCommentText = (postId, lastId) => {
 
   return commentText
 }
-export const postComment = (postId, userId) => {
-  let value = postId;
-  value = value.replace(/^"|"$/g, '');
-
-  const commentPost  = fetch(userUrl + '/comment', {
-    method: 'GET',
+export const postComment = (body) => {
+  const pComment  = fetch(userUrl + '/comment', {
+    method: 'POST',
     headers: myHeaders,
+    body: body,
     redirect: 'follow'
   })
     .then(response => response.json())
     .then(result => {
       if(result.success === true){
-        return result.data.comments
+        return result.data
       } else {
         return 'failed'
       }
     })
     .catch(error => console.log('error', error));
 
-  return commentPost
+  return pComment
 }
 export const editUserPost = (text, postId) => {
   const editUserPost  = fetch(userUrl + `/post/${postId}`, {
@@ -397,6 +415,44 @@ export const editUserPost = (text, postId) => {
     .catch(error => console.log('error', error));
 
   return editUserPost
+}
+export const likePost = (body) => {
+  const lPost  = fetch(userUrl + '/like', {
+    method: 'POST',
+    headers: myHeaders,
+    body: body,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return 'success'
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return lPost
+}
+export const unlikePost = (body) => {
+  const uPost  = fetch(userUrl + '/like', {
+    method: 'DELETE',
+    headers: myHeaders,
+    body: body,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return 'success'
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return uPost
 }
 
 // IMAGE
@@ -485,4 +541,23 @@ export const deleteUserPet = (petId) => {
     .catch(error => console.log('error', error));
 
   return deletePet
+}
+export const editUserPet = (text, petId) => {
+  const userPet  = fetch(userUrl + `/pet/${petId}`, {
+    method: 'PUT',
+    headers: myHeaders,
+    body: text,
+    redirect: 'follow'
+  })
+    .then(response => response.json())
+    .then(result => {
+      if(result.success === true){
+        return result.data.pet
+      } else {
+        return 'failed'
+      }
+    })
+    .catch(error => console.log('error', error));
+
+  return userPet
 }

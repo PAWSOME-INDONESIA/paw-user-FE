@@ -10,6 +10,8 @@ import {
   TouchableHighlight
 } from 'react-native';
 
+import { Video } from 'expo-av';
+
 import {TabView, TabBar} from 'react-native-tab-view';
 
 import AsyncStorage from '@react-native-community/async-storage';
@@ -20,6 +22,7 @@ import Pets from "./Pets";
 
 import {getFollowers, getFollowings, getUser, getPet, getUserPost} from "../../utils/API";
 import {translate} from '../../utils/i18n'
+import Comment from "../../components/Comment";
 
 const TabBarHeight = 48;
 const HeaderHeight = 250;
@@ -82,6 +85,7 @@ export default function Profile(props) {
   const [modalPet, setModalPet] = useState(false);
   const [modalPost, setModalPost] = useState(false);
   const [modalFollowers, setModalFollowers] = useState(false);
+  const [showComment, setShowComment] = useState(false);
   const [userProfile, setUserProfile] = useState({});
   const [followers, setFollowers] = useState([]);
   const [followings, setFollowings] = useState([]);
@@ -146,7 +150,6 @@ export default function Profile(props) {
       getPet(res, 'false').then(pet => {
         setPet(pet)
       })
-
       getUserPost(res, '').then(post => {
         setUserPost(post)
       })
@@ -245,12 +248,18 @@ export default function Profile(props) {
     setPet(filteredItems)
   }
 
+  const editPet = (uPet) => {
+    const filteredItems = pet.filter(item => item.id !== uPet.id)
+    setPet([...filteredItems, uPet])
+  }
+
   const renderHeader = () => {
     const y = scrollY.interpolate({
       inputRange: [0, HeaderHeight],
       outputRange: [0, -HeaderHeight],
       extrapolateRight: 'clamp',
     });
+
     return (
       <Animated.View style={[styles.header, {transform: [{translateY: y}]}]}>
         <View style={{ alignItems: 'center', flexDirection: 'row', marginTop: 30}}>
@@ -287,9 +296,18 @@ export default function Profile(props) {
           <TouchableOpacity onPress={toggleModalEditProfile} style={styles.editProfile}>
             <Text style={styles.editProfileText}>{translate(global.userLang, 'editProfile')}</Text>
           </TouchableOpacity>
-          <Pets visible={modalPet} onClose={toggleModalPet} pet={userPetDetail} deletePet={id => deletePet(id)} userProfile={userProfile}/>
+
+          <Pets
+            visible={modalPet}
+            onClose={toggleModalPet}
+            pet={userPetDetail}
+            deletePet={id => deletePet(id)}
+            userProfile={userProfile}
+            updatePet={uPet => editPet(uPet)}
+          />
+
           <EditProfile open={modalVisible} editProfile={(res) => onEditProfile(res)} close={()=> toggleModalEditProfile()} userProfile={userProfile}/>
-          <Post visible={modalPost} onClose={togglePostDetail} post={userPostDetail} deletePost={id => deletePost(id)} userProfile={userProfile}/>
+          <Post visible={modalPost} onClose={togglePostDetail} post={userPostDetail} deletePost={id => deletePost(id)} userProfile={userProfile} showComment={() => setShowComment(true)}/>
         </View>
       </Animated.View>
     );
@@ -328,21 +346,45 @@ export default function Profile(props) {
       togglePostDetail()
       setUserPostDetail(item)
     }
+
+    console.log(item, 'helo item')
     return (
       <View>
         <TouchableOpacity onPress={longPress}>
-          <Image
-            source={{uri: item.imageUrl}}
-            style={{
-              marginLeft: index % 3 === 0 ? 0 : 10,
-              borderRadius: 16,
-              width: tab2ItemSize,
-              height: tab2ItemSize,
-              backgroundColor: '#aaa',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          />
+          {item.type === 'image' && (
+            <Image
+              source={{uri: item.imageUrl}}
+              style={{
+                marginLeft: index % 3 === 0 ? 0 : 10,
+                borderRadius: 16,
+                width: tab2ItemSize,
+                height: tab2ItemSize,
+                backgroundColor: '#aaa',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            />
+          )}
+          {item.type === 'video' && (
+            <Video
+              source={{ uri: item.imageUrl }}
+              rate={1.0}
+              volume={1.0}
+              isMuted={false}
+              resizeMode="cover"
+              shouldPlay={false}
+              isLooping
+              style={{
+                marginLeft: index % 3 === 0 ? 0 : 10,
+                borderRadius: 16,
+                width: tab2ItemSize,
+                height: tab2ItemSize,
+                backgroundColor: '#aaa',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            />
+          )}
         </TouchableOpacity>
       </View>
     );
@@ -449,8 +491,14 @@ export default function Profile(props) {
     <SafeAreaView style={{flex: 1}}>
       {loading ? <ActivityIndicator color="#0000ff" style={{top: '50%', }} size="large"/> : (
         <View style={{flex: 1}}>
-          {renderTabView()}
-          {renderHeader()}
+          {showComment ? (
+            <Comment userId={userProfile.id} closeComment={() => setShowComment(false)} feedDetail={{post: userPostDetail}}/>
+          ) : (
+            <React.Fragment>
+              {renderTabView()}
+              {renderHeader()}
+            </React.Fragment>
+          )}
         </View>
       )}
     </SafeAreaView>

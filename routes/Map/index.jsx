@@ -19,14 +19,14 @@ export default function Map() {
     const intervalId = setInterval(() => {
       AsyncStorage.getItem('@session').then(res => {
         getPet(res, 'true').then(pet => {
-          // console.log(pet, 'helo dum')
+          console.log(pet, 'helo dum')
           if(pet === 'failed'){
             return
           }
           setPet(pet)
         })
       })
-    }, 50000)
+    }, 5000)
 
     return () => clearInterval(intervalId);
 
@@ -75,7 +75,7 @@ export default function Map() {
                   title={res.name}
                   description={'I love to eat'}
                 >
-                  <Image source={{uri: res.imageUrl}} style={{height: 30, width: 30, borderRadius: 50}}/>
+                  <Image source={{uri: res.imageUrl}} style={{height: 40, width: 40, borderRadius: 50}}/>
                 </Marker>
               )
             }

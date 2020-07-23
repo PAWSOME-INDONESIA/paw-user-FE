@@ -7,6 +7,7 @@ import {
   View, ActivityIndicator, TextInput, KeyboardAvoidingView, ImageBackground
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Video } from 'expo-av';
 import { Button, DatePicker } from 'native-base';
 import {uploadImage, postUserPost, postPet} from "../../utils/API";
 import AsyncStorage from "@react-native-community/async-storage";
@@ -20,6 +21,8 @@ export default function Post(props) {
   const [caption, setCaption] = React.useState('');
   const [fd, setFd] = React.useState('');
   const [bday, setBday] = React.useState('');
+  const [fileType, setFileType] = React.useState('');
+  const [shouldPlay, setShouldPlay] = React.useState(true);
   const [uploading, setUploading] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState(false);
   const [errorMsg2, setErrorMsg2] = React.useState(false);
@@ -50,7 +53,14 @@ export default function Post(props) {
       return;
     }
 
-    let pickerResult = await ImagePicker.launchImageLibraryAsync();
+    const mediaType = tipe === 'isPost' ? ImagePicker.MediaTypeOptions.All : ImagePicker.MediaTypeOptions.Images
+
+      let pickerResult = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: mediaType,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
     if (pickerResult.cancelled === true) {
       return;
     }
@@ -71,9 +81,11 @@ export default function Post(props) {
 
     if(tipe === 'isPost'){
       setSelectedImage({localUri: pickerResult.uri});
+      setFileType(match[0])
     }
     if(tipe === 'isPet'){
       setSelectedImage2({localUri: pickerResult.uri})
+      setFileType(match[0])
     }
   };
 
@@ -108,10 +120,12 @@ export default function Post(props) {
 
     if(tipe === 'isPost'){
       setSelectedImage({localUri: pickerResult.uri});
+      setFileType(match[0])
     }
 
     if(tipe === 'isPet'){
       setSelectedImage2({localUri: pickerResult.uri})
+      setFileType(match[0])
     }
   };
 
@@ -123,6 +137,7 @@ export default function Post(props) {
   const PostImage = () => {
     if(!isEmpty(caption)){
       setErrorMsg(false)
+      setShouldPlay(false)
       AsyncStorage.getItem('@session').then(userId =>
         {
           setUploading(true)
@@ -137,10 +152,12 @@ export default function Post(props) {
               if(res !== 'failed'){
                 setUploading(false)
                 setSelectedImage(null)
+                setFileType('')
                 props.navigation.navigate('Profile', {loadPage: true, userPost: res})
               } else {
                 setSelectedImage(null)
                 setUploading(false)
+                setFileType('')
               }
             })
           })
@@ -202,7 +219,20 @@ export default function Post(props) {
       <KeyboardAvoidingView keyboardVerticalOffset={100} behavior='position'>
         <ScrollView>
           <View style={styles.container}>
-            <Image source={{ uri: selectedImage.localUri }} style={styles.thumbnail} />
+            {fileType === '.mov' || fileType === '.mp4' ? (
+              <Video
+                source={{ uri: selectedImage.localUri }}
+                rate={1.0}
+                volume={1.0}
+                isMuted={false}
+                resizeMode="cover"
+                shouldPlay={shouldPlay}
+                isLooping
+                style={{width: '100%', height: 500}}
+              />
+            ) : (
+              <Image source={{ uri: selectedImage.localUri }} style={styles.thumbnail} />
+            )}
             <TouchableOpacity onPress={() => setSelectedImage(null)} style={styles.button2}>
               <Text style={styles.buttonText2}>Remove Image</Text>
             </TouchableOpacity>

@@ -16,9 +16,10 @@ import Loader from './Components/Loader';
 import {doLogin} from "../utils/API";
 
 const LoginScreen = props => {
+  let [loading, setLoading] = useState(false);
+  let [isForget, setIsForget] = useState(false);
   let [userEmail, setUserEmail] = useState('');
   let [userPassword, setUserPassword] = useState('');
-  let [loading, setLoading] = useState(false);
   let [errortext, setErrortext] = useState('');
   let [errorEmail, setErrorEmail] = useState('');
   let [errorPassword, setErrorPassword] = useState('');
