@@ -50,7 +50,7 @@ const LoginScreen = props => {
         setLoading(false);
         console.log(responseJson, 'helo login');
         // If server response message same as Data Matched
-        if (responseJson !== 'failed') {
+        if (responseJson.user) {
           AsyncStorage.setItem('@session', responseJson.user.id);
           AsyncStorage.setItem('@user', responseJson.user.username);
           AsyncStorage.setItem('@userImage', responseJson.user.iconUrl);
@@ -58,7 +58,11 @@ const LoginScreen = props => {
           console.log(responseJson.user.id, 'login user ID');
           props.navigation.navigate('DrawerNavigationRoutes');
         } else {
-          setErrortext('Please check your email id or password');
+          if(responseJson === 'EMAIL_NOT_YET_VERIFIED'){
+            setErrortext('Please verify your Email Address');
+          } else {
+            setErrortext('Incorrect Email Address or Password');
+          }
         }
       })
       .catch(error => {
@@ -73,6 +77,7 @@ const LoginScreen = props => {
       setErrorEmailForget(true)
     }
     getForgetPassword(userEmailForget).then(res => {
+      console.log(res, 'helo res')
       if(res === 'success'){
         setIsForget(false)
         setUserEmailForget('')
@@ -98,7 +103,7 @@ const LoginScreen = props => {
             </View>
             {isForget && (<React.Fragment>
               <Text style={{fontWeight: '800', marginLeft: 35, color: '#908d8d', fontSize: 18, marginBottom: 15}}>
-                Forget Password?
+                Forgot Password?
               </Text>
               <View style={styles.SectionStyle}>
                 <TextInput
@@ -154,7 +159,7 @@ const LoginScreen = props => {
                       let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
                       if (reg.test(UserEmail) === false) {
                         setErrorEmail(true)
-                        setErrorEmailText('Input a valid email address')
+                        setErrorEmailText('Input a valid Email Address')
                       } else {
                         setErrorEmail(false)
                         setErrorEmailText('')

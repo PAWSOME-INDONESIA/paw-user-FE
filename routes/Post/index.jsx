@@ -235,14 +235,14 @@ export default function Post(props) {
             ) : (
               <Image source={{ uri: selectedImage.localUri }} style={styles.thumbnail} />
             )}
-            <TouchableOpacity onPress={() => setSelectedImage(null)} style={{bottom: 50, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent:'center',borderRadius: 30, alignItems: 'center'}}>
-              <Text style={{width: 200, height: 50, color: 'white', fontWeight: 'bold', textAlign: 'center', marginTop: 20, fontSize: 17}}>Remove Image</Text>
+            <TouchableOpacity onPress={() => setSelectedImage(null)} style={{bottom: 30, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent:'center',borderRadius: 30, alignItems: 'center'}}>
+              <Text style={{width: 200, height: 40, color: 'white', fontWeight: 'bold', textAlign: 'center', marginTop: 20, fontSize: 17}}>Remove Image</Text>
             </TouchableOpacity>
             <TextInput
               style={styles.captionText}
               onChangeText={caps => setCaption(caps)}
               underlineColorAndroid="white"
-              placeholder="Write a caption..."
+              placeholder="Write a Caption ..."
               placeholderTextColor="grey"
               maxLength={100}
               multiline={true}
@@ -280,7 +280,7 @@ export default function Post(props) {
               <Text style={styles.buttonText2}>Remove Image</Text>
             </TouchableOpacity>
             <View style={styles.nameContainer}>
-              <Text style={{top: 10, marginRight: 20, width: 60}}>
+              <Text style={{top: 10, marginRight: 22, width: 60}}>
                 Name :
               </Text>
               <TextInput
@@ -331,8 +331,8 @@ export default function Post(props) {
               )
             }
             <View style={styles.nameContainer}>
-              <Text style={{top: 10, right: 25, width: 80}}>
-                Breed :
+              <Text style={{top: 10, right: 33, width: 80}}>
+                {`Breeds :        `}
               </Text>
               <Picker
                 mode="dropdown"
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
   },
   captionText2: {
     fontSize: 16,
-    paddingLeft: 10,
+    paddingLeft: 19,
     justifyContent: 'center',
     color: 'black',
     width: '50%',

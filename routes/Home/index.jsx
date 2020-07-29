@@ -371,36 +371,6 @@ export default function Home(props) {
     }
   }
 
-  const like = (id) => {
-    const param = JSON.stringify({
-      "postID": id,
-      "userID": userId
-    })
-
-    // if(state.second[id]){
-    //   unlikePost(param).then(res => {
-    //     if(res === 'success'){
-    //       dispatch({
-    //         type: 'deletet',
-    //         name: id,
-    //         value: false
-    //       })
-    //     }
-    //   })
-    //
-    // } else {
-    //   likePost(param).then(res => {
-    //     if(res === 'success'){
-    //       dispatch({
-    //         type: 'second',
-    //         name: id,
-    //         value: true
-    //       })
-    //     }
-    //   })
-    // }
-  }
-
   const fetchMoreFirst = () => {
     AsyncStorage.getItem('@session').then(res => {
       getUserHomeFeed(res, '').then(post => {
@@ -415,6 +385,44 @@ export default function Home(props) {
 
   const renderUserFeed = ({item, index}) => {
     const screen = Dimensions.get('window')
+    let comm = item.commentsCount > 0 ? `View all ${item.commentsCount} comments` : 'Add a comment'
+    let likeImage = item.isLiked ? require('../../assets/paw-filled.png') : require('../../assets/paw-empty.png')
+    state.second[item.post.id] ? likeImage = require('../../assets/paw-filled.png') : require('../../assets/paw-empty.png')
+    if(item.commentsCount === 1) {
+      comm = 'View 1 comment'
+    }
+    let likeee = state.second[item.post.id] ? item.likesCount + 1 : item.likesCount
+
+    const like = (id) => {
+      console.log(id, 'rekttt')
+      const param = JSON.stringify({
+        "postID": id,
+        "userID": userId
+      })
+
+      if(item.isLiked || state.second[id]){
+        unlikePost(param).then(res => {
+          if(res === 'success'){
+            dispatch({
+              type: 'second',
+              name: id,
+              value: false
+            })
+          }
+        })
+
+      } else {
+        likePost(param).then(res => {
+          if(res === 'success'){
+            dispatch({
+              type: 'second',
+              name: id,
+              value: true
+            })
+          }
+        })
+      }
+    }
 
     return (
       <View style={styles.item} key={`${item.post.id} ${index}`}>
@@ -453,10 +461,10 @@ export default function Home(props) {
            <View style={styles.likes}>
              <Image
                style={{width: 22, height: 22}}
-               source={require('../../assets/paw-empty.png')}/>
+               source={likeImage}/>
            </View>
          </TouchableOpacity>
-          <Text style={styles.itemText}>0 likes</Text>
+          <Text style={styles.itemText}>{likeee} likes</Text>
           <Text style={{fontWeight: 'bold', paddingLeft: 15}}>
               {item.user.username}
             <Text style={{fontWeight: 'normal'}}>
@@ -466,7 +474,7 @@ export default function Home(props) {
          <TouchableOpacity style={{marginTop: 10}} onPress={() => {
            setFeedDetail(item)
            setShowComment(true)}}>
-            <Text style={{color: 'grey', fontWeight: 'normal', marginLeft: 20, fontSize: 12, marginBottom: 20}}>{`Show Comment`}</Text>
+            <Text style={{color: 'grey', fontWeight: 'normal', marginLeft: 15, fontSize: 12, marginBottom: 20}}>{comm}</Text>
           </TouchableOpacity>
         <View style={styles.createdAt}>
           <Text style={{fontSize: 11, color: '#a4a4a7'}}>

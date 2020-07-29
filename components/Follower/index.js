@@ -4,34 +4,30 @@ import {
   StyleSheet,
   Text, ScrollView,
   TouchableOpacity,
-  View, ActivityIndicator, TextInput, KeyboardAvoidingView, ImageBackground, FlatList
+  View, ActivityIndicator, FlatList
 } from 'react-native';
 import {Container, Header, Icon, Input, Item, List, ListItem, Button, Right, Body, Left, Thumbnail} from "native-base";
-import {findUserByUsername, getCheckFollowStatus} from '../../utils/API'
-import UserProfile from "../../components/UserProfile";
-import AsyncStorage from "@react-native-community/async-storage";
+import Modal from "react-native-modal";
+import UserProfile from "../UserProfile";
 
-export default function Search(props) {
+export default function Follower(props) {
   const [data, setData] = React.useState([])
+  const [data2, setData2] = React.useState([])
   const [openUserProfile, setOpenUserProfile] = React.useState(false)
   const [loading, setLoading] = React.useState(false)
-  const [keyword, setKeyword] = React.useState('')
   const [uProfile, setUProfile] = React.useState('')
 
+  useEffect(() => {
+    setData(props.followers)
+    setData2(props.followers)
+  },[props.followers])
+
   const handleSearch = (text) => {
-    findUserByUsername(text).then(res => {
-      console.log(res, 'helo res')
-      if(res === 'failed'){
-        setData([])
-      } else {
-        setData(res)
-      }
-    })
-    setKeyword(text)
+    let filteredData = data2.filter(x => String(x.username).includes(text));
+    setData(filteredData)
   }
 
   if(openUserProfile){
-    console.log(uProfile, 'ded')
     return(
       <UserProfile uProfile={uProfile} closeUProfile={() => setOpenUserProfile(false)}/>
     )
@@ -68,29 +64,36 @@ export default function Search(props) {
       )
     )
   }
-
-  return(
-    <Container>
-      <Header searchBar rounded>
-        <Item>
-          <Icon name="ios-search"/>
-          <Input placeholder="Search" onChangeText={handleSearch} autoCapitalize="none"/>
-        </Item>
-      </Header>
-      <List>
-        <FlatList
-          data={data}
-          renderItem={renderList}
-          keyExtractor={(item, index) => index.toString()}
-          ListFooterComponent={renderFooter}
-        />
-      </List>
-    </Container>
-  )
+    return(
+      <View style={styles.container}>
+        <Modal
+          isVisible={props.open}
+          onSwipeComplete={props.close}
+          swipeThreshold={50}
+          swipeDirection={['down']}
+        >
+          <Container style={{marginTop: 30, borderRadius: 20}}>
+              <Item style={{top: 10, marginLeft: 20, marginRight: 20}}>
+                <Icon name="ios-search"/>
+                <Input placeholder="Search" onChangeText={handleSearch} autoCapitalize="none"/>
+              </Item>
+            <List>
+              <FlatList
+                data={data}
+                renderItem={renderList}
+                keyExtractor={(item, index) => index.toString()}
+                ListFooterComponent={renderFooter}
+              />
+            </List>
+          </Container>
+        </Modal>
+      </View>
+    )
 }
 
 const styles = StyleSheet.create({
   container: {
+    borderTopLeftRadius: 20,
     flex: 1,
     backgroundColor: 'white',
     alignItems: 'center',

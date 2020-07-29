@@ -32,6 +32,7 @@ import {
 import {translate} from '../../utils/i18n'
 import Comment from "../../components/Comment";
 import {Ionicons} from "@expo/vector-icons";
+import Follower from "../Follower";
 
 const TabBarHeight = 48;
 const HeaderHeight = 270;
@@ -94,6 +95,7 @@ export default function UserProfile(props) {
   const [modalPet, setModalPet] = useState(false);
   const [modalPost, setModalPost] = useState(false);
   const [modalFollowers, setModalFollowers] = useState(false);
+  const [modalFollowings, setModalFollowings] = useState(false);
   const [showComment, setShowComment] = useState(false);
   const [isFollowed, setIsFollowed] = useState(false);
   const [isFetched, setIsFetched] = useState(false);
@@ -187,6 +189,10 @@ export default function UserProfile(props) {
     setModalFollowers(!modalFollowers)
   };
 
+  const toggleModalFollowings = () => {
+    setModalFollowings(!modalFollowings)
+  };
+
   const togglePostDetail = () => {
     setModalPost(!modalPost)
   };
@@ -200,6 +206,18 @@ export default function UserProfile(props) {
         setUserPost([...userPost, ...post])
       }
     })
+  }
+
+  if(modalFollowers){
+    return(
+      <Follower open={modalFollowers} close={() => toggleModalFollowers()} followers={followers}/>
+    )
+  }
+
+  if(modalFollowings){
+    return(
+      <Follower open={modalFollowings} close={() => toggleModalFollowings()} followers={followings}/>
+    )
   }
 
   const syncScrollOffset = () => {
@@ -293,10 +311,10 @@ export default function UserProfile(props) {
               <Text style={styles.statAmount}>{followers.length}</Text>
               <Text style={styles.statTitle}>followers</Text>
             </TouchableOpacity>
-            <View style={styles.stat}>
+            <TouchableOpacity style={styles.stat} onPress={toggleModalFollowings}>
               <Text style={styles.statAmount}>{followings.length}</Text>
               <Text style={styles.statTitle}>following</Text>
-            </View>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.stat} onPress={() => setIndex(1)}>
               <Text style={styles.statAmount}>{pet.length}</Text>
               <Text style={styles.statTitle}>pets</Text>
@@ -549,7 +567,8 @@ export default function UserProfile(props) {
 
 const styles = StyleSheet.create({
   container : {
-    flex: 1,
+    // flex: 1,
+    height: '100%',
     backgroundColor: 'white'
   },
   avatarContainer : {

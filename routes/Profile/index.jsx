@@ -23,6 +23,7 @@ import Pets from "./Pets";
 import {getFollowers, getFollowings, getUser, getPet, getUserPost} from "../../utils/API";
 import {translate} from '../../utils/i18n'
 import Comment from "../../components/Comment";
+import Follower from "../../components/Follower";
 
 const TabBarHeight = 48;
 const HeaderHeight = 250;
@@ -85,6 +86,7 @@ export default function Profile(props) {
   const [modalPet, setModalPet] = useState(false);
   const [modalPost, setModalPost] = useState(false);
   const [modalFollowers, setModalFollowers] = useState(false);
+  const [modalFollowings, setModalFollowings] = useState(false);
   const [showComment, setShowComment] = useState(false);
   const [userProfile, setUserProfile] = useState({});
   const [followers, setFollowers] = useState([]);
@@ -103,6 +105,10 @@ export default function Profile(props) {
   let listOffset = useRef({});
   let isListGliding = useRef(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    console.toString(props, 'helo')
+  }, [])
 
   useEffect(() => {
     if(props.route.params && props.route.params.loadPage && props.route.params.userPost){
@@ -178,6 +184,10 @@ export default function Profile(props) {
     setModalFollowers(!modalFollowers)
   };
 
+  const toggleModalFollowings = () => {
+    setModalFollowings(!modalFollowings)
+  };
+
   const togglePostDetail = () => {
     setModalPost(!modalPost)
   };
@@ -193,6 +203,18 @@ export default function Profile(props) {
         }
       })
     })
+  }
+
+  if(modalFollowings ){
+    return(
+      <Follower open={modalFollowings} close={() => toggleModalFollowings()} followers={followings}/>
+    )
+  }
+
+  if(modalFollowers) {
+    return(
+      <Follower open={modalFollowers} close={() => toggleModalFollowers()} followers={followers}/>
+    )
   }
 
   const syncScrollOffset = () => {
@@ -249,7 +271,6 @@ export default function Profile(props) {
 
   const deletePet = (id) => {
     const filteredItems = pet.filter(item => item.id !== id)
-    console.log(id, filteredItems, 'helo delete pet infornt')
     setPet(filteredItems)
   }
 
@@ -281,10 +302,10 @@ export default function Profile(props) {
               <Text style={styles.statAmount}>{followers.length}</Text>
               <Text style={styles.statTitle}>followers</Text>
             </TouchableOpacity>
-            <View style={styles.stat}>
+            <TouchableOpacity style={styles.stat} onPress={toggleModalFollowings}>
               <Text style={styles.statAmount}>{followings.length}</Text>
               <Text style={styles.statTitle}>following</Text>
-            </View>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.stat} onPress={() => setIndex(1)}>
               <Text style={styles.statAmount}>{pet.length}</Text>
               <Text style={styles.statTitle}>pets</Text>
@@ -310,7 +331,6 @@ export default function Profile(props) {
             userProfile={userProfile}
             updatePet={uPet => editPet(uPet)}
           />
-
           <EditProfile open={modalVisible} editProfile={(res) => onEditProfile(res)} close={()=> toggleModalEditProfile()} userProfile={userProfile}/>
           <Post visible={modalPost} onClose={togglePostDetail} post={userPostDetail} deletePost={id => deletePost(id)} userProfile={userProfile} showComment={() => setShowComment(true)}/>
         </View>

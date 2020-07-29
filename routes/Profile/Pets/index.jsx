@@ -3,10 +3,10 @@ import {
   StyleSheet, View, Text, TextInput,
   TouchableOpacity, Alert, KeyboardAvoidingView, Platform
 } from 'react-native';
-import { Button, Thumbnail } from 'native-base';
+import {Button, Picker, Thumbnail} from 'native-base';
 import moment from 'moment';
 import Modal from 'react-native-modal';
-import {AntDesign, Feather} from '@expo/vector-icons';
+import {AntDesign, Feather, Ionicons} from '@expo/vector-icons';
 import RBSheet from "react-native-raw-bottom-sheet";
 import {deleteUserPet, editUserPet, uploadImage} from "../../../utils/API";
 import ProgressiveImage from '../../../components/ProgressiveImage'
@@ -18,6 +18,7 @@ export default function Pets(props) {
   const refRBSheet = useRef();
   const [updatedAt, setUpdatedAt] = useState('');
   const [petName, setPetName] = useState('');
+  const [breed, setBreed] = useState('');
   const [editMsg, setEditMsg] = useState('');
   const [date, setDate] = useState(moment(props.pet.birthDate).format('YYYY-MM-DD'));
   const [locationUrl, setLocationUrl] = useState('');
@@ -30,6 +31,7 @@ export default function Pets(props) {
     setDate(moment(props.pet.birthDate).format('YYYY-MM-DD'))
     setImageUrl(props.pet.imageUrl)
     setPetName(props.pet.name)
+    setBreed(props.pet.breed)
     setLocationUrl(props.pet.locationUrl)
     setUpdatedAt(props.pet.updated_at)
   }, [props.pet])
@@ -115,6 +117,7 @@ export default function Pets(props) {
   const saveMsg = () => {
     const param = JSON.stringify({
       "name": petName,
+      "breed": breed,
       "birthDate": date,
       "imageUrl": imageUrl,
       "locationUrl": locationUrl
@@ -124,6 +127,7 @@ export default function Pets(props) {
       console.log(res, 'helo param')
       if(res === 'failed') {
         setPetName(props.pet.name)
+        setPetName(props.pet.breed)
         setDate(props.pet.birthDate)
         alert('failed to update pet data')
         setOnEdit(false)
@@ -243,13 +247,14 @@ export default function Pets(props) {
                 <TouchableOpacity onPress={() => {
                   setOnEdit(false)
                   setPetName(props.pet.name)
+                  setBreed(props.pet.breed)
                   setDate(moment(props.pet.birthDate).format('YYYY-MM-DD'))
-                }} style={{width: 60, height: 40, right: 310, top: 50, justifyContent: 'center', alignItems: 'center'}}>
+                }} style={{width: 60, height: 40, right: 310, top: 100, justifyContent: 'center', alignItems: 'center'}}>
                   <Text style={{color: 'red'}} >
                     cancel
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => saveMsg()} style={{width: 60,height: 40, right: 100, top: 50, justifyContent: 'center', alignItems: 'center'}}>
+                <TouchableOpacity onPress={() => saveMsg()} style={{width: 60,height: 40, right: 100, top: 100, justifyContent: 'center', alignItems: 'center'}}>
                   <Text style={{color: 'green'}} >
                     save
                   </Text>
@@ -261,9 +266,37 @@ export default function Pets(props) {
                 </Text>
                 {editMsg}
               </Text>)}
+            {onEdit && (
+              <View style={{flexDirection: 'row', top: 70}}>
+                <Text style={{fontWeight: 'bold', paddingLeft: 20}}>
+                  {`Breed: `}
+                </Text>
+                <Picker
+                  mode="dropdown"
+                  iosIcon={<Ionicons name="ios-arrow-down" size={24} color="black" />}
+                  style={{ width: 140, left: 90, bottom: 15 }}
+                  placeholder="Select Breed"
+                  placeholderStyle={{ color: "#d3d3d3" }}
+                  placeholderIconColor="#007aff"
+                  selectedValue={breed}
+                  onValueChange={res => setBreed(res)}
+                >
+                  <Picker.Item label="Dogs" value="Dogs" />
+                  <Picker.Item label="Cats" value="Cats" />
+                </Picker>
+              </View>
+            )}
             {!onEdit &&
             (
-              <Text style={{fontSize: 11, color: '#a4a4a7', bottom: -80, left: 10, fontWeight: 'bold'}}>
+              <Text style={{paddingLeft: 10, marginTop: 10}}>
+                <Text style={{fontWeight: '600'}}>
+                  {"Breed : " + breed}
+                </Text>
+              </Text>
+            )}
+            {!onEdit &&
+            (
+              <Text style={{fontSize: 11, color: '#a4a4a7', bottom: -100, left: 10, fontWeight: 'bold'}}>
                 {"Last Updated at : " + moment(updatedAt).fromNow()}
               </Text>
             )}
@@ -317,7 +350,7 @@ const styles = StyleSheet.create({
     aspectRatio: 1
   },
   caption: {
-    height: 200,
+    height: 230,
     backgroundColor: 'white',
     borderBottomLeftRadius: 5,
     borderBottomRightRadius: 5,

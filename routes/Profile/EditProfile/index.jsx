@@ -17,7 +17,7 @@ import isEmpty from "react-native-web/dist/vendor/react-native/isEmpty";
 import Loader from "../../../Screen/Components/Loader";
 
 export default function EditProfile(props) {
-  const [date, setDate] = useState(moment(props.userProfile.birthDate).format('YYYY-MM-DD'));
+  const [date, setDate] = useState(props.userProfile.birthDate);
   const [userName, setUserName] = useState(props.userProfile.username);
   const [phoneNumber, setPhoneNumber] = useState(props.userProfile.phoneNumber);
   const [bio, setBio] = useState(props.userProfile.bio);
@@ -35,7 +35,7 @@ export default function EditProfile(props) {
     setPhoneNumber(props.userProfile.phoneNumber)
     setBio(props.userProfile.bio)
     setImageUrl(props.userProfile.imageUrl)
-    setDate(moment(props.userProfile.birthDate).format('YYYY-MM-DD'))
+    setDate(props.userProfile.birthDate || new Date())
 
   },[props.userProfile])
 
@@ -111,7 +111,6 @@ export default function EditProfile(props) {
   };
 
   const imgUrl = isEmpty(props.userProfile.imageUrl) ? {uri: 'https://icon-library.com/images/google-user-icon/google-user-icon-21.jpg'} : { uri: props.userProfile.imageUrl}
-
   return (
     <View style={styles.container}>
       <Modal
@@ -231,7 +230,7 @@ export default function EditProfile(props) {
                         date={date}
                         placeholder="Select date"
                         format="YYYY-MM-DD"
-                        minDate="1950-05-01"
+                        minDate="1970-05-01"
                         maxDate="2021-05-01"
                         confirmBtnText="Confirm"
                         cancelBtnText="Cancel"

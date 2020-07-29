@@ -113,7 +113,7 @@ function MyTabs(props) {
       <Tab.Screen name="Add" component={Post} />
       <Tab.Screen name="Find" component={Search} />
       <Tab.Screen name="Map" component={Map} />
-      <Tab.Screen name="Profile" component={Profile} />
+      <Tab.Screen name="Profile" component={Profile}/>
     </Tab.Navigator>
   );
 }

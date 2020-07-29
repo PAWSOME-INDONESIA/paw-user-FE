@@ -20,7 +20,7 @@ export const doLogin = (body) => {
             if(result.success === true){
                 return result.data
             } else {
-                return 'failed'
+                return result.error
             }
         })
         .catch(error => console.log('error', error));
@@ -234,13 +234,9 @@ export const checkUsernameUnique = (username) => {
     .then(response => response.json())
     .then(result => {
       if(result.success === true){
-        if(result.data.user.username === ""){
           return 'success'
-        } else{
-          return 'existed'
-        }
       } else {
-        return 'existed'
+        return 'failed'
       }
     })
     .catch(error => console.log('error', error));
@@ -259,13 +255,9 @@ export const checkEmailUnique = (email) => {
     .then(response => response.json())
     .then(result => {
       if(result.success === true){
-        if(result.data.user.email === ""){
-          return 'success'
-        } else{
-          return 'existed'
-        }
+        return 'success'
       } else {
-        return 'existed'
+        return 'failed'
       }
     })
     .catch(error => console.log('error', error));

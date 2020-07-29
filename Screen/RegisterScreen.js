@@ -23,6 +23,7 @@ const RegisterScreen = props => {
   let [checkUsername, setCheckUsername] = useState(false);
   let [checkEmail, setCheckEmail] = useState(false);
   let [checkPassword, setCheckPassword] = useState(false);
+  let [uniqueEmail, setUniqueEmail] = useState(false);
   let [errortext, setErrortext] = useState('');
   let [isRegistraionSuccess, setIsRegistraionSuccess] = useState(false);
 
@@ -120,10 +121,11 @@ const RegisterScreen = props => {
                 }
                 if(UserName.length > 2){
                   checkUsernameUnique(UserName).then(res => {
+                    console.log(res, 'helo res')
                     if(res === 'success'){
-                      setCheckUsername(false)
-                    } else if(res === 'existed'){
                       setCheckUsername(true)
+                    } else if(res === 'failed'){
+                      setCheckUsername(false)
                     }
                   })
                 }
@@ -149,11 +151,13 @@ const RegisterScreen = props => {
                   setCheckEmail(true)
                 }
                 else {
+                  setCheckEmail(false)
                   checkEmailUnique(UserEmail).then(res => {
+                    console.log(res, 'helo res')
                     if(res === 'success'){
-                      setCheckEmail(false)
-                    } else if(res === 'existed'){
-                      setCheckEmail(true)
+                      setUniqueEmail(true)
+                    } else if(res === 'failed'){
+                      setUniqueEmail(false)
                     }
                   })
                 }
@@ -172,6 +176,9 @@ const RegisterScreen = props => {
               blurOnSubmit={false}
             />
           </View>
+          {uniqueEmail && (
+            <Text style={{color: 'red', marginLeft: 23, marginTop: 5}}>That email address already in use. Please use a different email address</Text>
+          )}
           <View style={styles.SectionStyle}>
             <TextInput
               style={styles.inputStyle}
