@@ -278,6 +278,7 @@ import {
   Dimensions, Animated
 } from 'react-native';
 import AsyncStorage from "@react-native-community/async-storage";
+import { AntDesign } from '@expo/vector-icons';
 import moment from "moment";
 import {Video} from "expo-av";
 
@@ -452,6 +453,7 @@ export default function Home(props) {
           volume={1.0}
           isMuted={false}
           resizeMode="cover"
+          useNativeControls
           shouldPlay={state.first[item.post.id]}
           isLooping
         />

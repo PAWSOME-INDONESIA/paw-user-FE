@@ -118,8 +118,9 @@ export default function Post(props) {
           {props.post.type === 'video' && (
             <Video
               source={{ uri: props.post.imageUrl }}
+              useNativeControls
               rate={1.0}
-              volume={0}
+              volume={1.0}
               isMuted={false}
               resizeMode="cover"
               shouldPlay={true}

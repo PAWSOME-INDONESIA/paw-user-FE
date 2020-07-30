@@ -336,6 +336,10 @@ export default function UserProfile(props) {
               unfollowUser(currentUser, param).then(res => {
                 if(res === 'success') {
                   setIsFollowed(false)
+                  props.backFollow({
+                    status: 'unfollow',
+                    userID: props.uProfile.id
+                  })
                 }
               })
             }} style={styles.editProfile}>
@@ -350,6 +354,10 @@ export default function UserProfile(props) {
               followUser(currentUser, param).then(res => {
                 if(res === 'success') {
                   setIsFollowed(true)
+                  props.backFollow({
+                    status: 'follow',
+                    userID: props.uProfile.id
+                  })
                 }
               })
             }} style={styles.editProfile}>
@@ -433,6 +441,7 @@ export default function UserProfile(props) {
               isMuted={false}
               resizeMode="cover"
               shouldPlay={false}
+              // useNativeControls
               isLooping
               style={{
                 marginLeft: index % 3 === 0 ? 0 : 10,

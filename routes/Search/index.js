@@ -20,7 +20,6 @@ export default function Search(props) {
 
   const handleSearch = (text) => {
     findUserByUsername(text).then(res => {
-      console.log(res, 'helo res')
       if(res === 'failed'){
         setData([])
       } else {
@@ -31,7 +30,6 @@ export default function Search(props) {
   }
 
   if(openUserProfile){
-    console.log(uProfile, 'ded')
     return(
       <UserProfile uProfile={uProfile} closeUProfile={() => setOpenUserProfile(false)}/>
     )

@@ -23,6 +23,7 @@ export default function SettingsScreen() {
   const [expoPushToken, setExpoPushToken] = useState('');
   const [oldPass, setOldPass] = useState('');
   const [newPass, setNewPass] = useState('');
+  const [txt, setTxt] = useState('');
   const [timer, setTimer] = useState(10);
   const [start, setStart] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -158,9 +159,12 @@ export default function SettingsScreen() {
           </ListItem>
           {showReminder && (
             <React.Fragment>
-              <Button title={"10 Min"} onPress={() => setCountDown(100)}/>
-              <Button title={"20 Min"} onPress={() => setCountDown(200)}/>
-              <Button title={"30 Min"} onPress={() => setCountDown(300)}/>
+              <Button title={"5 Min"} onPress={() => setCountDown(300)}/>
+              <Button title={"10 Min"} onPress={() => setCountDown(600)}/>
+              <Button title={"30 Min"} onPress={() => setCountDown(1800)}/>
+              <Item style={{marginLeft: 30, marginRight: 30}}>
+                <Input placeholder='Remind Text' onChangeText={setTxt} autoCapitalize="none" style={{textAlign: 'center'}}/>
+              </Item>
               {start && (
                 <CountDown
                   until={timer}
@@ -169,7 +173,7 @@ export default function SettingsScreen() {
                   timeToShow={['M', 'S']}
                   timeLabels={{m: 'MM', s: 'SS'}}
                   onFinish={async () => {
-                    await sendPushNotification(expoPushToken);
+                    await sendPushNotification(expoPushToken, txt);
                   }}
                   onPress={() => alert('hello')}
                   size={20}
@@ -236,12 +240,12 @@ export default function SettingsScreen() {
 }
 
 // Can use this function below, OR use Expo's Push Notification Tool-> https://expo.io/dashboard/notifications
-async function sendPushNotification(expoPushToken) {
+async function sendPushNotification(expoPushToken, text) {
   const message = {
     to: expoPushToken,
     sound: 'default',
     title: 'Pawsome',
-    body: 'Your pet needs your attention! ',
+    body: text ? text : 'Your pet needs your attention! ',
     data: { data: 'pawsome' },
   };
 

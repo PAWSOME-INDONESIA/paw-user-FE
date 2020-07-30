@@ -29,7 +29,15 @@ export default function Follower(props) {
 
   if(openUserProfile){
     return(
-      <UserProfile uProfile={uProfile} closeUProfile={() => setOpenUserProfile(false)}/>
+      <UserProfile
+        uProfile={uProfile}
+        closeUProfile={() => setOpenUserProfile(false)}
+        backFollow={err => {
+          let filteredData = data.filter(x => x.id !== err.userID);
+          setData(filteredData)
+          props.backData(filteredData)
+        }}
+      />
     )
   }
 

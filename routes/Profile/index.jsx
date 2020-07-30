@@ -107,10 +107,6 @@ export default function Profile(props) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    console.toString(props, 'helo')
-  }, [])
-
-  useEffect(() => {
     if(props.route.params && props.route.params.loadPage && props.route.params.userPost){
       setLoading(true)
       setIndex(0)
@@ -124,6 +120,10 @@ export default function Profile(props) {
     }
     updateProfile()
   }, [props.route.params])
+
+  useEffect(() => {
+    updateProfile()
+  },[props])
 
   useEffect(() => {
     setLoading(false)
@@ -207,13 +207,13 @@ export default function Profile(props) {
 
   if(modalFollowings ){
     return(
-      <Follower open={modalFollowings} close={() => toggleModalFollowings()} followers={followings}/>
+      <Follower open={modalFollowings} close={() => toggleModalFollowings()} followers={followings} backData={data => setFollowings(data)}/>
     )
   }
 
   if(modalFollowers) {
     return(
-      <Follower open={modalFollowers} close={() => toggleModalFollowers()} followers={followers}/>
+      <Follower open={modalFollowers} close={() => toggleModalFollowers()} followers={followers} backData={data => setFollowers(data)}/>
     )
   }
 
