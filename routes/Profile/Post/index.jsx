@@ -169,7 +169,7 @@ export default function Post(props) {
           {!onEdit && (
             <TouchableOpacity onPress={() => props.showComment()}>
               <Text style={{color: 'gray', marginTop: 10, marginLeft: 15}}>
-                View all 4 comments
+                Add a Comment
               </Text>
             </TouchableOpacity>
           )}
