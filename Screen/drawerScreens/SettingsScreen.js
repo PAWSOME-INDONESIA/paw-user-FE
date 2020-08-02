@@ -159,7 +159,7 @@ export default function SettingsScreen() {
           </ListItem>
           {showReminder && (
             <React.Fragment>
-              <Button title={"5 Min"} onPress={() => setCountDown(300)}/>
+              <Button title={"1 Min"} onPress={() => setCountDown(60)}/>
               <Button title={"10 Min"} onPress={() => setCountDown(600)}/>
               <Button title={"30 Min"} onPress={() => setCountDown(1800)}/>
               <Item style={{marginLeft: 30, marginRight: 30}}>
